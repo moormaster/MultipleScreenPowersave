@@ -1,0 +1,8 @@
+﻿EnumDisplayMonitors
+GetCursorPos
+GetMonitorInfo
+GetNumberOfPhysicalMonitorsFromHMONITOR
+GetPhysicalMonitorsFromHMONITOR
+GetWindowInfo
+MONITORINFOF_PRIMARY
+SetVCPFeature
