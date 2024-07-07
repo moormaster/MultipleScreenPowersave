@@ -1,24 +1,22 @@
 ﻿namespace MultipleScreenPowersave;
 
+using System.Diagnostics;
+using System.Drawing;
+using System.Windows.Forms;
+using CommunityToolkit.Diagnostics;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
 using MultipleScreenPowersave.VCP;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Windows.Forms;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 public static partial class Program
 {
-    public static void Main(string[] args)
+    public static void Main()
     {
-        Point currentCursorPosition;
-        PInvoke.GetCursorPos(out currentCursorPosition);
+        PInvoke.GetCursorPos(out Point currentCursorPosition);
         Console.WriteLine($"Current mouse position: {currentCursorPosition.X}, {currentCursorPosition.Y}");
 
         foreach (var screen in System.Windows.Forms.Screen.AllScreens)
@@ -51,7 +49,7 @@ public static partial class Program
             if (process.MainWindowHandle == default)
                 continue;
 
-            var windowInfo = new WINDOWINFO();
+            var windowInfo = default(WINDOWINFO);
             PInvoke.GetWindowInfo(new HWND(process.MainWindowHandle), ref windowInfo);
 
             if ((windowInfo.dwStyle & WINDOW_STYLE.WS_MINIMIZE) > 0)
@@ -97,7 +95,7 @@ public static partial class Program
 
     private static void TurnOffMonitor(PhysicalMonitorHandle monitor)
     {
-        PInvoke.SetVCPFeature(
+        var hresult = PInvoke.SetVCPFeature(
             (HANDLE)monitor.Value,
 
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
@@ -105,11 +103,14 @@ public static partial class Program
 
             // https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L2635
             PowerModeValueConstants.DpmsOff);
+
+        if (hresult != 1)
+            throw new Exception($"Failed to turn off monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}");
     }
 
     private static void TurnOnMonitor(PhysicalMonitorHandle monitor)
     {
-        PInvoke.SetVCPFeature(
+        var hresult = PInvoke.SetVCPFeature(
             (HANDLE)monitor.Value,
 
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
@@ -117,5 +118,8 @@ public static partial class Program
 
             // https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L2635
             PowerModeValueConstants.DpmOn);
+
+        if (hresult != 1)
+            throw new Exception($"Failed to turn on monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}");
     }
 }

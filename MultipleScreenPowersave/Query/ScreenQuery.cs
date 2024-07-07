@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Diagnostics;
+﻿namespace MultipleScreenPowersave.Query;
+
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using Windows.Win32;
@@ -6,21 +7,19 @@ using Windows.Win32.Devices.Display;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 
-namespace MultipleScreenPowersave.Query;
-
 public static class ScreenQuery
 {
     public static ScreenInformation GetScreenInformation()
     {
-        List<DisplayMonitorInformation> displayMonitors = new();
+        List<DisplayMonitorInformation> displayMonitors = [];
 
         unsafe
         {
-            Dictionary<HMONITOR, Rectangle> displayMonitorRectangles = new Dictionary<HMONITOR, Rectangle>();
+            Dictionary<HMONITOR, Rectangle> displayMonitorRectangles = [];
 
             // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enumdisplaymonitors
             PInvoke.EnumDisplayMonitors(
-                new HDC(),
+                default,
                 (RECT?)null,
                 (displayMonitorHandle, deviceContextHandle, displayMonitor, applicationDefinedData) =>
                 {
@@ -31,7 +30,7 @@ public static class ScreenQuery
 
             foreach (var hMonitor in displayMonitorRectangles.Keys)
             {
-                MONITORINFO monitorInfo = new MONITORINFO();
+                MONITORINFO monitorInfo = default;
                 PInvoke.GetMonitorInfo(hMonitor, ref monitorInfo);
 
                 // see https://learn.microsoft.com/en-us/windows/win32/api/physicalmonitorenumerationapi/nf-physicalmonitorenumerationapi-getnumberofphysicalmonitorsfromhmonitor
@@ -53,7 +52,6 @@ public static class ScreenQuery
                             element.szPhysicalMonitorDescription.ToString()))));
             }
         }
-
 
         return new ScreenInformation(displayMonitors);
     }

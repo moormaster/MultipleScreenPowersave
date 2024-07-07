@@ -1,6 +1,6 @@
-﻿using StronglyTypedIds;
+﻿namespace MultipleScreenPowersave.Model.Handles;
 
-namespace MultipleScreenPowersave.Model.Handles;
+using StronglyTypedIds;
 
 [StronglyTypedId(Template.Int)]
-public partial struct DisplayMonitorHandle;
+public readonly partial struct DisplayMonitorHandle;

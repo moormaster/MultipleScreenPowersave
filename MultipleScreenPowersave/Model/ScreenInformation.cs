@@ -1,47 +1,46 @@
-﻿using CommunityToolkit.Diagnostics;
-using MultipleScreenPowersave.Model.Handles;
-using System.Collections.Immutable;
+﻿namespace MultipleScreenPowersave.Model;
+
 using System.Text;
-namespace MultipleScreenPowersave.Model;
+using CommunityToolkit.Diagnostics;
+using MultipleScreenPowersave.Model.Handles;
 
 public class ScreenInformation
 {
-    public IEnumerable<PhysicalMonitorInformation> PhysicalMonitors {
-        get => _displayMonitors.SelectMany(monitor => monitor.PhysicalMonitors);
-    }
-
-    public IEnumerable<DisplayMonitorInformation> DisplayMonitors { get => _displayMonitors; }
-
-    public IReadOnlyDictionary<DisplayMonitorHandle, DisplayMonitorInformation> DisplayMonitorByHandle { get => _displayMonitorByHandle; }
-
-    private List<DisplayMonitorInformation> _displayMonitors = new List<DisplayMonitorInformation>();
-    private Dictionary<DisplayMonitorHandle, DisplayMonitorInformation> _displayMonitorByHandle = new ();
+    private readonly List<DisplayMonitorInformation> displayMonitors = [];
+    private readonly Dictionary<DisplayMonitorHandle, DisplayMonitorInformation> displayMonitorByHandle = [];
 
     public ScreenInformation(IEnumerable<DisplayMonitorInformation> displayMonitors)
     {
         Guard.IsNotNull(displayMonitors);
 
-        _displayMonitors.AddRange(displayMonitors);
+        this.displayMonitors.AddRange(displayMonitors);
 
-        foreach (var monitor in this._displayMonitors)
-            _displayMonitorByHandle.Add(monitor.Handle, monitor);
+        foreach (var monitor in this.displayMonitors)
+            this.displayMonitorByHandle.Add(monitor.Handle, monitor);
     }
+
+    public IEnumerable<PhysicalMonitorInformation> PhysicalMonitors
+    {
+        get => this.displayMonitors.SelectMany(monitor => monitor.PhysicalMonitors);
+    }
+
+    public IEnumerable<DisplayMonitorInformation> DisplayMonitors { get => this.displayMonitors; }
+
+    public IReadOnlyDictionary<DisplayMonitorHandle, DisplayMonitorInformation> DisplayMonitorByHandle { get => this.displayMonitorByHandle; }
 
     /// <inheritdoc/>
     public override string? ToString()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
         sb.AppendLine("ScreenInformation [");
-        foreach (var monitor in this._displayMonitors)
+        foreach (var monitor in this.displayMonitors)
         {
             var monitorLines = monitor.ToString()?.Split('\n') ?? [];
-            monitorLines.All(monitorLine =>
+            foreach (var line in monitorLines)
             {
                 sb.Append('\t');
-                sb.AppendLine(monitorLine);
-
-                return true;
-            });
+                sb.AppendLine(line);
+            }
         }
 
         sb.AppendLine("]");

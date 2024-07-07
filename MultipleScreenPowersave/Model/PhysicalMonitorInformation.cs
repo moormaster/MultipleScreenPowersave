@@ -1,27 +1,27 @@
-﻿using MultipleScreenPowersave.Model.Handles;
-using System.Text;
+﻿namespace MultipleScreenPowersave.Model;
 
-namespace MultipleScreenPowersave.Model;
+using System.Text;
+using MultipleScreenPowersave.Model.Handles;
 
 public class PhysicalMonitorInformation
 {
+    public PhysicalMonitorInformation(PhysicalMonitorHandle handle, DisplayMonitorHandle displayMonitor, string description)
+    {
+        this.Handle = handle;
+        this.Description = description;
+        this.DisplayMonitor = displayMonitor;
+    }
+
     public PhysicalMonitorHandle Handle { get; }
 
     public string Description { get; }
 
     public DisplayMonitorHandle DisplayMonitor { get; }
 
-    public PhysicalMonitorInformation(PhysicalMonitorHandle handle, DisplayMonitorHandle displayMonitor, string description)
-    {
-        Handle = handle;
-        Description = description;
-        DisplayMonitor = displayMonitor;
-    }
-
     /// <inheritdoc/>
     public override string? ToString()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
         sb.AppendLine("PhysicalMonitorInformation {");
 
         sb.AppendLine($"\tHandle: {this.Handle},");

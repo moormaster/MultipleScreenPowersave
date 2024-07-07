@@ -1,36 +1,36 @@
-﻿using MultipleScreenPowersave.Model.Handles;
-using System.Text;
+﻿namespace MultipleScreenPowersave.Model;
 
-namespace MultipleScreenPowersave.Model;
+using System.Text;
+using MultipleScreenPowersave.Model.Handles;
 
 public class DisplayMonitorInformation
 {
+    private readonly List<PhysicalMonitorInformation> physicalMonitors = [];
+
+    public DisplayMonitorInformation(DisplayMonitorHandle handle, bool isPrimary, Rectangle monitorRectangle, IEnumerable<PhysicalMonitorInformation> physicalMonitors)
+    {
+        this.Handle = handle;
+        this.IsPrimary = isPrimary;
+        this.MonitorRectangle = monitorRectangle;
+
+        this.physicalMonitors.AddRange(physicalMonitors);
+    }
+
     public DisplayMonitorHandle Handle { get; }
 
     public bool IsPrimary { get; }
 
     public Rectangle MonitorRectangle { get; }
 
-    public IEnumerable<PhysicalMonitorInformation> PhysicalMonitors { get => _physicalMonitors; }
+    public IEnumerable<PhysicalMonitorInformation> PhysicalMonitors { get => this.physicalMonitors; }
 
     public Size Size
-        => MonitorRectangle.Size;
-
-    private List<PhysicalMonitorInformation> _physicalMonitors = new List<PhysicalMonitorInformation>();
-
-    public DisplayMonitorInformation(DisplayMonitorHandle handle, bool isPrimary, Rectangle monitorRectangle, IEnumerable<PhysicalMonitorInformation> physicalMonitors)
-    {
-        Handle = handle;
-        IsPrimary = isPrimary;
-        MonitorRectangle = monitorRectangle;
-
-        _physicalMonitors.AddRange(physicalMonitors);
-    }
+        => this.MonitorRectangle.Size;
 
     /// <inheritdoc/>
     public override string? ToString()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new();
         sb.AppendLine("DisplayMonitorInformation {");
 
         sb.AppendLine($"\tHandle: {this.Handle},");
@@ -39,7 +39,7 @@ public class DisplayMonitorInformation
         sb.AppendLine();
         sb.AppendLine("\tPhysicalMonitors: [");
 
-        foreach (var monitor in this._physicalMonitors)
+        foreach (var monitor in this.physicalMonitors)
         {
             var monitorLines = monitor.ToString()?.Split('\n') ?? [];
             monitorLines.All(monitorLine =>
