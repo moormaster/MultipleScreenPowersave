@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MultipleScreenPowersave Windows": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "MULTIPLESCREENPOWERSAVE_CONFIGURATION_FILE": "$(ProjectDir)\\config.windows.json"
+      }
+    }
+  }
+}

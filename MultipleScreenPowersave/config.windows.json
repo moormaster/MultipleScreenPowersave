@@ -1,0 +1,6 @@
+﻿{
+	"windowBlacklist": [
+		{ "processName": "explorer", "windowTitle": "^$" },
+		{ "processName": "TextInputHost" }
+	]
+}

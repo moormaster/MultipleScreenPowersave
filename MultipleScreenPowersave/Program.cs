@@ -2,8 +2,10 @@
 
 using System.Diagnostics;
 using System.Drawing;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using CommunityToolkit.Diagnostics;
+using MultipleScreenPowersave.Configuration;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
@@ -43,6 +45,7 @@ public static partial class Program
     private static void TurnOnOnlyUsedMonitors(ScreenInformation screenInformation)
     {
         IDictionary<PhysicalMonitorHandle, bool> isMonitorNeeded = screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
+        IReadOnlyList<ProcessBlacklistEntry> blacklist = ConfigurationQueryFactory.GetConfigurationQuery().GetProcessBlacklist();
 
         foreach (var process in Process.GetProcesses())
         {
@@ -58,11 +61,7 @@ public static partial class Program
             if (windowInfo.rcClient.Width == 0 && windowInfo.rcClient.Height == 0)
                 continue;
 
-            // blacklist some apps
-            if (process.ProcessName == "explorer" && process.MainWindowTitle.Length == 0)
-                continue;
-
-            if (process.ProcessName == "TextInputHost")
+            if (IsBlacklisted(blacklist, process))
                 continue;
 
             var screenOfApp = Screen.FromHandle(process.MainWindowHandle);
@@ -91,6 +90,27 @@ public static partial class Program
                 TurnOffMonitor(kv.Key);
             }
         }
+    }
+
+    private static bool IsBlacklisted(IReadOnlyList<ProcessBlacklistEntry> blacklist, Process process)
+    {
+        return blacklist.Any(
+            entry =>
+            {
+                if (entry.ProcessName != null)
+                {
+                    if (!entry.ProcessName.IsMatch(process.ProcessName))
+                        return false;
+                }
+
+                if (entry.WindowTitle != null)
+                {
+                    if (!entry.WindowTitle.IsMatch(process.MainWindowTitle))
+                        return false;
+                }
+
+                return true;
+            });
     }
 
     private static void TurnOffMonitor(PhysicalMonitorHandle monitor)
