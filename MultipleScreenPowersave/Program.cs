@@ -1,7 +1,9 @@
 ﻿namespace MultipleScreenPowersave;
 
+using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 using CommunityToolkit.Diagnostics;
 using MultipleScreenPowersave.Configuration;
@@ -12,20 +14,11 @@ using MultipleScreenPowersave.VCP;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 public static partial class Program
 {
     public static void Main()
     {
-        PInvoke.GetCursorPos(out Point currentCursorPosition);
-        Console.WriteLine($"Current mouse position: {currentCursorPosition.X}, {currentCursorPosition.Y}");
-
-        foreach (var screen in System.Windows.Forms.Screen.AllScreens)
-        {
-            Console.WriteLine(screen);
-        }
-
         var screenInformation = ScreenQuery.GetScreenInformation();
         Console.WriteLine(screenInformation);
 
@@ -57,11 +50,24 @@ public static partial class Program
             }
         }
 
+        PInvoke.GetCursorPos(out Point currentCursorPosition);
+        foreach (var displayMonitor in screenInformation.DisplayMonitors)
+        {
+            if (displayMonitor.MonitorRectangle.Contains(currentCursorPosition))
+            {
+                // enable physical monitors currently visited by the mouse cursor
+                foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
+                {
+                    Console.WriteLine($"PhysicalMonitor #{physicalMonitor.Handle}: Mouse cursor position ({currentCursorPosition.X}x{currentCursorPosition.Y})");
+                    isMonitorNeeded[physicalMonitor.Handle] = true;
+                }
+            }
+        }
+
         foreach (var process in Process.GetProcesses())
         {
             if (process.MainWindowHandle == default)
                 continue;
-
             var windowInfo = default(WINDOWINFO);
             PInvoke.GetWindowInfo(new HWND(process.MainWindowHandle), ref windowInfo);
 
@@ -80,10 +86,10 @@ public static partial class Program
             if (IsBlacklisted(blacklist, process))
                 continue;
 
-            foreach (var monitor in displayMonitor.PhysicalMonitors)
+            foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
             {
-                Console.WriteLine($"PhysicalMonitor #{monitor.Handle}: {process.ProcessName} - \"{process.MainWindowTitle}\" (#{process.MainWindowHandle})");
-                isMonitorNeeded[monitor.Handle] = true;
+                Console.WriteLine($"PhysicalMonitor #{physicalMonitor.Handle}: {process.ProcessName} - \"{process.MainWindowTitle}\" (#{process.MainWindowHandle})");
+                isMonitorNeeded[physicalMonitor.Handle] = true;
             }
         }
 
