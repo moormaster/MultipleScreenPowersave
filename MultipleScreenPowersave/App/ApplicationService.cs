@@ -13,7 +13,10 @@ using Windows.Win32.UI.WindowsAndMessaging;
 
 public class ApplicationService
 {
+    private const int MainWindowHandleCacheLifetimeMs = 60000;
+
     private readonly ScreenInformation screenInformation;
+    private readonly Dictionary<int, MainWindowHandleOfProcess> mainWindowHandleOfProcess = [];
 
     public ApplicationService()
     {
@@ -52,10 +55,15 @@ public class ApplicationService
 
         foreach (var process in Process.GetProcesses())
         {
-            if (process.MainWindowHandle == default)
+            // use cached MainWindowHandle to reduce expensive kernel calls
+            if (!this.mainWindowHandleOfProcess.TryGetValue(process.Id, out var v) || (DateTime.Now.Ticks - v.LastSeenTicks) / TimeSpan.TicksPerMillisecond >= MainWindowHandleCacheLifetimeMs)
+                this.mainWindowHandleOfProcess[process.Id] = new(process.Id, process.MainWindowHandle, DateTime.Now.Ticks);
+            var mainWindowHandle = this.mainWindowHandleOfProcess[process.Id].MainWindowHandle;
+
+            if (mainWindowHandle == default)
                 continue;
             var windowInfo = default(WINDOWINFO);
-            PInvoke.GetWindowInfo(new HWND(process.MainWindowHandle), ref windowInfo);
+            PInvoke.GetWindowInfo(new HWND(mainWindowHandle), ref windowInfo);
 
             if ((windowInfo.dwStyle & WINDOW_STYLE.WS_MINIMIZE) > 0)
                 continue;
@@ -63,7 +71,7 @@ public class ApplicationService
             if (windowInfo.rcClient.Width == 0 && windowInfo.rcClient.Height == 0)
                 continue;
 
-            var screenOfApp = Screen.FromHandle(process.MainWindowHandle);
+            var screenOfApp = Screen.FromHandle(mainWindowHandle);
 
             // hacky way to get the display monitor handle
             var displayMonitorHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());
@@ -74,7 +82,7 @@ public class ApplicationService
 
             foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
             {
-                Console.WriteLine($"PhysicalMonitor #{physicalMonitor.Handle}: {process.ProcessName} - \"{process.MainWindowTitle}\" (#{process.MainWindowHandle})");
+                Console.WriteLine($"PhysicalMonitor #{physicalMonitor.Handle}: {process.ProcessName} - \"{process.MainWindowTitle}\" (#{mainWindowHandle})");
                 isMonitorNeeded[physicalMonitor.Handle] = true;
             }
         }
