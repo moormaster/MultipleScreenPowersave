@@ -7,13 +7,28 @@ public static partial class Program
 {
     public static void Main()
     {
+        var sleepTimeMs = 1000;
         var applicationService = new ApplicationService();
+        var stop = false;
 
-        for (var i = 0; i < 30; i++)
+        // catch SIGTERM
+        AppDomain.CurrentDomain.ProcessExit += (object? sender, EventArgs e) =>
+        {
+            stop = true;
+            applicationService.TurnOnAllMonitors();
+        };
+
+        // catch SIGINT
+        Console.CancelKeyPress += (object? sender, ConsoleCancelEventArgs e) =>
+        {
+            stop = true;
+            e.Cancel = true;
+        };
+
+        while (!stop)
         {
             applicationService.TurnOnOnlyUsedMonitors();
-
-            Thread.Sleep(1000);
+            Thread.Sleep(sleepTimeMs);
         }
 
         applicationService.TurnOnAllMonitors();
