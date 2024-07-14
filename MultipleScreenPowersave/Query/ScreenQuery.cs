@@ -2,6 +2,7 @@
 
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
+using System.Runtime.InteropServices;
 using Windows.Win32;
 using Windows.Win32.Devices.Display;
 using Windows.Win32.Foundation;
@@ -31,6 +32,7 @@ public static class ScreenQuery
             foreach (var hMonitor in displayMonitorRectangles.Keys)
             {
                 MONITORINFO monitorInfo = default;
+                monitorInfo.cbSize = (uint)Marshal.SizeOf(typeof(MONITORINFO));
                 PInvoke.GetMonitorInfo(hMonitor, ref monitorInfo);
 
                 // see https://learn.microsoft.com/en-us/windows/win32/api/physicalmonitorenumerationapi/nf-physicalmonitorenumerationapi-getnumberofphysicalmonitorsfromhmonitor
