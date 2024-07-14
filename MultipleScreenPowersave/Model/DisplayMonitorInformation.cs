@@ -42,13 +42,11 @@ public class DisplayMonitorInformation
         foreach (var monitor in this.physicalMonitors)
         {
             var monitorLines = monitor.ToString()?.Split('\n') ?? [];
-            monitorLines.All(monitorLine =>
+            foreach (var line in monitorLines)
             {
                 sb.Append("\t\t");
-                sb.AppendLine(monitorLine);
-
-                return true;
-            });
+                sb.AppendLine(line);
+            }
         }
 
         sb.AppendLine("\t]");

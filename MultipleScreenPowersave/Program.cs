@@ -2,7 +2,6 @@
 
 using System.Diagnostics;
 using System.Drawing;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using CommunityToolkit.Diagnostics;
 using MultipleScreenPowersave.Configuration;
@@ -13,6 +12,7 @@ using MultipleScreenPowersave.VCP;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 public static partial class Program
 {
@@ -45,7 +45,17 @@ public static partial class Program
     private static void TurnOnOnlyUsedMonitors(ScreenInformation screenInformation)
     {
         IDictionary<PhysicalMonitorHandle, bool> isMonitorNeeded = screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
-        IReadOnlyList<ProcessBlacklistEntry> blacklist = ConfigurationQueryFactory.GetConfigurationQuery().GetProcessBlacklist();
+        BlacklistConfiguration blacklist = ConfigurationQueryFactory.GetConfigurationQuery().GetBlacklist();
+
+        foreach (var displayMonitor in screenInformation.DisplayMonitors)
+        {
+            if (IsBlacklisted(blacklist, displayMonitor))
+            {
+                // ensure that physical screens of blacklisted monitors never gets powered off
+                foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
+                    isMonitorNeeded[physicalMonitor.Handle] = true;
+            }
+        }
 
         foreach (var process in Process.GetProcesses())
         {
@@ -61,18 +71,18 @@ public static partial class Program
             if (windowInfo.rcClient.Width == 0 && windowInfo.rcClient.Height == 0)
                 continue;
 
-            if (IsBlacklisted(blacklist, process))
-                continue;
-
             var screenOfApp = Screen.FromHandle(process.MainWindowHandle);
 
             // hacky way to get the display monitor handle
-            var screenHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());
-            var screen = screenInformation.DisplayMonitorByHandle[screenHandle];
+            var displayMonitorHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());
+            var displayMonitor = screenInformation.DisplayMonitorByHandle[displayMonitorHandle];
 
-            foreach (var monitor in screen.PhysicalMonitors)
+            if (IsBlacklisted(blacklist, process))
+                continue;
+
+            foreach (var monitor in displayMonitor.PhysicalMonitors)
             {
-                Console.WriteLine($"PhysicalMonitor #{monitor.Handle}: {process.ProcessName} - {process.MainWindowTitle} (#{process.MainWindowHandle})");
+                Console.WriteLine($"PhysicalMonitor #{monitor.Handle}: {process.ProcessName} - \"{process.MainWindowTitle}\" (#{process.MainWindowHandle})");
                 isMonitorNeeded[monitor.Handle] = true;
             }
         }
@@ -92,25 +102,14 @@ public static partial class Program
         }
     }
 
-    private static bool IsBlacklisted(IReadOnlyList<ProcessBlacklistEntry> blacklist, Process process)
+    private static bool IsBlacklisted(BlacklistConfiguration blacklist, Process process)
     {
-        return blacklist.Any(
-            entry =>
-            {
-                if (entry.ProcessName != null)
-                {
-                    if (!entry.ProcessName.IsMatch(process.ProcessName))
-                        return false;
-                }
+        return blacklist.Windows.Any(windowEntry => windowEntry.IsMatch(process));
+    }
 
-                if (entry.WindowTitle != null)
-                {
-                    if (!entry.WindowTitle.IsMatch(process.MainWindowTitle))
-                        return false;
-                }
-
-                return true;
-            });
+    private static bool IsBlacklisted(BlacklistConfiguration blacklist, DisplayMonitorInformation displayMonitor)
+    {
+        return blacklist.DisplayMonitors.Any(monitorEntry => monitorEntry.IsMatch(displayMonitor));
     }
 
     private static void TurnOffMonitor(PhysicalMonitorHandle monitor)

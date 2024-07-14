@@ -12,14 +12,14 @@ public class ConfigurationQuery
         this.file = file;
     }
 
-    public IReadOnlyList<ProcessBlacklistEntry> GetProcessBlacklist()
+    public BlacklistConfiguration GetBlacklist()
     {
         JsonDocument jsonConfiguration = JsonDocument.Parse(File.ReadAllText(this.file));
 
-        var windowBlacklist = jsonConfiguration.RootElement.GetProperty("windowBlacklist");
-        return JsonSerializer.Deserialize<IList<ProcessBlacklistEntry>>(
-            windowBlacklist,
-            Serialization.GetJsonSerializerOptions())?.ToList()
-            ?? [];
+        var blacklist = jsonConfiguration.RootElement.GetProperty("blacklist");
+        return JsonSerializer.Deserialize<BlacklistConfiguration>(
+            blacklist,
+            Serialization.GetJsonSerializerOptions())
+            ?? new BlacklistConfiguration();
     }
 }

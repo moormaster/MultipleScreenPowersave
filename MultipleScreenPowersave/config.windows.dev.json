@@ -1,9 +1,5 @@
 ﻿{
 	"blacklist": {
-		"displayMonitors": [
-			{ "isPrimary": true }
-		],
-
 		"windows": [
 			{ "processName": "explorer", "windowTitle": "^$" },
 			{ "processName": "TextInputHost" }
