@@ -65,10 +65,13 @@ public class ApplicationService
             var windowInfo = default(WINDOWINFO);
             PInvoke.GetWindowInfo(new HWND(mainWindowHandle), ref windowInfo);
 
+            if ((windowInfo.dwStyle & WINDOW_STYLE.WS_VISIBLE) == 0)
+                continue;
+
             if ((windowInfo.dwStyle & WINDOW_STYLE.WS_MINIMIZE) > 0)
                 continue;
 
-            if (windowInfo.rcClient.Width == 0 && windowInfo.rcClient.Height == 0)
+            if (windowInfo.rcWindow.Width == 0 || windowInfo.rcWindow.Height == 0)
                 continue;
 
             var screenOfApp = Screen.FromHandle(mainWindowHandle);
