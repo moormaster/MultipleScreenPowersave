@@ -81,11 +81,16 @@ public class ApplicationService
             var displayMonitor = this.screenInformation.DisplayMonitorByHandle[displayMonitorHandle];
 
             if (IsBlacklisted(blacklist, process))
+            {
+                Console.WriteLine($"Blacklisted ProcessName: \"{process.ProcessName}\" - \"{process.MainWindowTitle}\" (#{mainWindowHandle})");
+                Console.WriteLine($"\tdwStyle: {windowInfo.dwStyle}, dwExStyle: {windowInfo.dwExStyle.ToHexString()}, Pos: ({windowInfo.rcWindow.X}, {windowInfo.rcWindow.Y}), Size: {windowInfo.rcWindow.Width}x{windowInfo.rcWindow.Height}");
                 continue;
+            }
 
             foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
             {
-                Console.WriteLine($"PhysicalMonitor #{physicalMonitor.Handle}: {process.ProcessName} - \"{process.MainWindowTitle}\" (#{mainWindowHandle})");
+                Console.WriteLine($"PhysicalMonitor #{physicalMonitor.Handle}: ProcessName: \"{process.ProcessName}\" - \"{process.MainWindowTitle}\" (#{mainWindowHandle})");
+                Console.WriteLine($"\tdwStyle: {windowInfo.dwStyle}, dwExStyle: {windowInfo.dwExStyle.ToHexString()}, Pos: ({windowInfo.rcWindow.X}, {windowInfo.rcWindow.Y}), Size: {windowInfo.rcWindow.Width}x{windowInfo.rcWindow.Height}");
                 isMonitorNeeded[physicalMonitor.Handle] = true;
             }
         }
