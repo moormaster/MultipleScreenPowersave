@@ -73,7 +73,16 @@ public class ApplicationService
                 PInvoke.GetWindowThreadProcessId(new HWND(windowHandle), &processId);
             }
 
-            Process process = Process.GetProcessById((int)processId);
+            Process process;
+            try
+            {
+                process = Process.GetProcessById((int)processId);
+            }
+            catch (ArgumentException)
+            {
+                // process is not active (anymore) - continue
+                continue;
+            }
 
             var windowInfo = default(WINDOWINFO);
             PInvoke.GetWindowInfo(new HWND(windowHandle), ref windowInfo);
