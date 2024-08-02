@@ -91,17 +91,37 @@ public class ApplicationService
         {
             if (kv.Value)
             {
-                Console.WriteLine($"Turning on physical monitor #{kv.Key}");
-                TurnOnMonitor(kv.Key);
+                try
+                {
+                    Console.WriteLine($"Turning on physical monitor #{kv.Key}");
+                    TurnOnMonitor(kv.Key);
+                }
+                catch (InvalidOperationException e)
+                {
+                    Console.WriteLine(e.ToString());
+                    Console.WriteLine(e.StackTrace);
+                }
             }
             else
             {
                 Console.WriteLine($"Turning off physical monitor #{kv.Key}");
-                TurnOffMonitor(kv.Key);
-            }
+                try
+                {
+                    TurnOffMonitor(kv.Key);
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        Console.WriteLine(e.ToString());
+                        Console.WriteLine(e.StackTrace);
+                    }
+                }
         }
     }
 
+    /// <summary>
+    /// Turn on all physical monitors.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
     public void TurnOnAllMonitors()
     {
         foreach (var monitor in this.screenInformation.PhysicalMonitors)
@@ -120,6 +140,11 @@ public class ApplicationService
         return blacklist.DisplayMonitors.Any(monitorEntry => monitorEntry.IsMatch(displayMonitor));
     }
 
+    /// <summary>
+    /// Turn off given physical monitor.
+    /// </summary>
+    /// <param name="monitor">Handle to the physical monitor.</param>
+    /// <exception cref="InvalidOperationException">Failure to turn off monitor.</exception>
     private static void TurnOffMonitor(PhysicalMonitorHandle monitor)
     {
         var hresult = PInvoke.SetVCPFeature(
@@ -132,9 +157,14 @@ public class ApplicationService
             PowerModeValueConstants.DpmsOff);
 
         if (hresult != 1)
-            throw new Exception($"Failed to turn off monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}");
+            throw new InvalidOperationException($"Failed to turn off monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}");
     }
 
+    /// <summary>
+    /// Turn on given physical monitor.
+    /// </summary>
+    /// <param name="monitor">Handle to the physical monitor.</param>
+    /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
     private static void TurnOnMonitor(PhysicalMonitorHandle monitor)
     {
         var hresult = PInvoke.SetVCPFeature(
@@ -147,6 +177,6 @@ public class ApplicationService
             PowerModeValueConstants.DpmOn);
 
         if (hresult != 1)
-            throw new Exception($"Failed to turn on monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}");
+            throw new InvalidOperationException($"Failed to turn on monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}");
     }
 }
