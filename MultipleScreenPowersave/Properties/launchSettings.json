@@ -11,6 +11,9 @@
       "environmentVariables": {
         "MULTIPLESCREENPOWERSAVE_CONFIGURATION_FILE": "$(ProjectDir)\\config.windows.dev.json"
       }
+    },
+    "MultipleScreenPowersave Windows Prod": {
+      "commandName": "Project"
     }
   }
 }

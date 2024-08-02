@@ -19,6 +19,8 @@ public class ApplicationService
 
     public ApplicationService()
     {
+        Console.WriteLine($"Using configuration file: {ConfigurationQueryFactory.GetConfigurationFileName()}");
+
         this.screenInformation = ScreenQuery.GetScreenInformation();
         Console.WriteLine(this.screenInformation);
     }

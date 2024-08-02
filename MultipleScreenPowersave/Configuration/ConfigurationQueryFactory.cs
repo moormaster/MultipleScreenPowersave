@@ -13,7 +13,7 @@ public static class ConfigurationQueryFactory
         return new ConfigurationQuery(GetConfigurationFileName());
     }
 
-    private static string GetConfigurationFileName()
+    public static string GetConfigurationFileName()
     {
         var fileName = Environment.GetEnvironmentVariable(EnvironmentVariables.MultipleScreenPowerSaveConfigurationFile);
         if (!string.IsNullOrEmpty(fileName))
