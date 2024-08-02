@@ -5,7 +5,7 @@
 		],
 
 		"windows": [
-			{ "processName": "explorer", "windowTitle": "^$" },
+			{ "processName": "explorer", "windowTitle": "^(|Program Manager)$" },
 			{ "processName": "TextInputHost" }
 		]
 	}

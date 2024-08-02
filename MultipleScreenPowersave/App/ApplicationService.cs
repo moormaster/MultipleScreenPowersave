@@ -16,7 +16,6 @@ public class ApplicationService
     private const int MainWindowHandleCacheLifetimeMs = 60000;
 
     private readonly ScreenInformation screenInformation;
-    private readonly Dictionary<int, MainWindowHandleOfProcess> mainWindowHandleOfProcess = [];
 
     public ApplicationService()
     {
@@ -53,17 +52,40 @@ public class ApplicationService
             }
         }
 
-        foreach (var process in Process.GetProcesses())
-        {
-            // use cached MainWindowHandle to reduce expensive kernel calls
-            if (!this.mainWindowHandleOfProcess.TryGetValue(process.Id, out var v) || (DateTime.Now.Ticks - v.LastSeenTicks) / TimeSpan.TicksPerMillisecond >= MainWindowHandleCacheLifetimeMs)
-                this.mainWindowHandleOfProcess[process.Id] = new(process.Id, process.MainWindowHandle, DateTime.Now.Ticks);
-            var mainWindowHandle = this.mainWindowHandleOfProcess[process.Id].MainWindowHandle;
+        List<nint> windowHandles = [];
 
-            if (mainWindowHandle == default)
-                continue;
+        PInvoke.EnumWindows(
+            (windowHandle, param1) =>
+            {
+                windowHandles.Add(windowHandle);
+                return true;
+            },
+            new LPARAM(0)
+        );
+
+        foreach (var windowHandle in windowHandles)
+        {
+            uint processId;
+            unsafe
+            {
+                PInvoke.GetWindowThreadProcessId(new HWND(windowHandle), &processId);
+            }
+
+            Process process = Process.GetProcessById((int)processId);
+
             var windowInfo = default(WINDOWINFO);
-            PInvoke.GetWindowInfo(new HWND(mainWindowHandle), ref windowInfo);
+            PInvoke.GetWindowInfo(new HWND(windowHandle), ref windowInfo);
+
+            var windowTextLength = PInvoke.GetWindowTextLength(new HWND(windowHandle));
+            string windowText;
+            unsafe
+            {
+                fixed (char* windowTextBuffer = new char[windowTextLength+1])
+                {
+                    PInvoke.GetWindowText(new HWND(windowHandle), windowTextBuffer, windowTextLength+1);
+                    windowText = new string(windowTextBuffer);
+                }
+            }
 
             if ((windowInfo.dwStyle & WINDOW_STYLE.WS_VISIBLE) == 0)
                 continue;
@@ -74,22 +96,22 @@ public class ApplicationService
             if (windowInfo.rcWindow.Width == 0 || windowInfo.rcWindow.Height == 0)
                 continue;
 
-            var screenOfApp = Screen.FromHandle(mainWindowHandle);
+            var screenOfApp = Screen.FromHandle(windowHandle);
 
             // hacky way to get the display monitor handle
             var displayMonitorHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());
             var displayMonitor = this.screenInformation.DisplayMonitorByHandle[displayMonitorHandle];
 
-            if (IsBlacklisted(blacklist, process))
+            if (IsBlacklisted(blacklist, new WindowProcessInformation(process.ProcessName, windowText)))
             {
-                Console.WriteLine($"Blacklisted ProcessName: \"{process.ProcessName}\" - \"{process.MainWindowTitle}\" (#{mainWindowHandle})");
+                Console.WriteLine($"Blacklisted ProcessName: \"{process.ProcessName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})");
                 Console.WriteLine($"\tdwStyle: {windowInfo.dwStyle}, dwExStyle: {windowInfo.dwExStyle.ToHexString()}, Pos: ({windowInfo.rcWindow.X}, {windowInfo.rcWindow.Y}), Size: {windowInfo.rcWindow.Width}x{windowInfo.rcWindow.Height}");
                 continue;
             }
 
             foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
             {
-                Console.WriteLine($"PhysicalMonitor #{physicalMonitor.Handle}: ProcessName: \"{process.ProcessName}\" - \"{process.MainWindowTitle}\" (#{mainWindowHandle})");
+                Console.WriteLine($"PhysicalMonitor #{physicalMonitor.Handle}: ProcessName: \"{process.ProcessName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})");
                 Console.WriteLine($"\tdwStyle: {windowInfo.dwStyle}, dwExStyle: {windowInfo.dwExStyle.ToHexString()}, Pos: ({windowInfo.rcWindow.X}, {windowInfo.rcWindow.Y}), Size: {windowInfo.rcWindow.Width}x{windowInfo.rcWindow.Height}");
                 isMonitorNeeded[physicalMonitor.Handle] = true;
             }
@@ -138,9 +160,9 @@ public class ApplicationService
         }
     }
 
-    private static bool IsBlacklisted(BlacklistConfiguration blacklist, Process process)
+    private static bool IsBlacklisted(BlacklistConfiguration blacklist, WindowProcessInformation windowProcessInformation)
     {
-        return blacklist.Windows.Any(windowEntry => windowEntry.IsMatch(process));
+        return blacklist.Windows.Any(windowEntry => windowEntry.IsMatch(windowProcessInformation));
     }
 
     private static bool IsBlacklisted(BlacklistConfiguration blacklist, DisplayMonitorInformation displayMonitor)

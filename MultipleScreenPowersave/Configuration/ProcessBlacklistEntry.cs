@@ -1,7 +1,7 @@
 ﻿namespace MultipleScreenPowersave.Configuration;
 
-using System.Diagnostics;
 using System.Text.RegularExpressions;
+using MultipleScreenPowersave.Model;
 
 public record class ProcessBlacklistEntry
 {
@@ -19,17 +19,17 @@ public record class ProcessBlacklistEntry
 
     public Regex? WindowTitle { get; }
 
-    public bool IsMatch(Process process)
+    public bool IsMatch(WindowProcessInformation windowProcessInformation)
     {
         if (this.ProcessName != null)
         {
-            if (!this.ProcessName.IsMatch(process.ProcessName))
+            if (!this.ProcessName.IsMatch(windowProcessInformation.ProcessName))
                 return false;
         }
 
         if (this.WindowTitle != null)
         {
-            if (!this.WindowTitle.IsMatch(process.MainWindowTitle))
+            if (!this.WindowTitle.IsMatch(windowProcessInformation.WindowTitle))
                 return false;
         }
 

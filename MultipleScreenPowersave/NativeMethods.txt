@@ -1,8 +1,12 @@
 ﻿EnumDisplayMonitors
+EnumWindows
 GetCursorPos
 GetMonitorInfo
 GetNumberOfPhysicalMonitorsFromHMONITOR
 GetPhysicalMonitorsFromHMONITOR
 GetWindowInfo
+GetWindowText
+GetWindowTextLength
+GetWindowThreadProcessId
 MONITORINFOF_PRIMARY
 SetVCPFeature
