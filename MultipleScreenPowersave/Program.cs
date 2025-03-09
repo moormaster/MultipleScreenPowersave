@@ -2,6 +2,8 @@
 
 using System.Threading;
 using MultipleScreenPowersave.App;
+using MultipleScreenPowersave.Configuration;
+using Serilog;
 
 /// <summary>
 /// Main class.
@@ -13,6 +15,8 @@ public static class Program
     /// </summary>
     public static void Main()
     {
+        SetupSerilog();
+
         var sleepTimeMs = 1000;
         var applicationService = new ApplicationService();
         var stop = false;
@@ -38,5 +42,13 @@ public static class Program
         }
 
         applicationService.TurnOnAllMonitors();
+    }
+
+    private static void SetupSerilog()
+    {
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.AppSettings(filePath: ConfigFilePath.AppConfig)
+            .ReadFrom.AppSettings(settingPrefix: "serilogDebug", filePath: ConfigFilePath.AppConfig)
+            .CreateLogger();
     }
 }

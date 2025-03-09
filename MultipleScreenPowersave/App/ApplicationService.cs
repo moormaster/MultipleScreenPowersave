@@ -7,6 +7,7 @@ using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
 using MultipleScreenPowersave.VCP;
+using Serilog;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -25,12 +26,13 @@ public class ApplicationService
     /// </summary>
     public ApplicationService()
     {
-        Console.WriteLine(
-            $"Using configuration file: {ConfigurationQueryFactory.GetConfigurationFileName()}"
+        Log.Logger.Information(
+            "Using configuration file: {configurationFileName}",
+            ConfigurationQueryFactory.GetConfigurationFileName()
         );
 
         this.screenInformation = ScreenQuery.GetScreenInformation();
-        Console.WriteLine(this.screenInformation);
+        Log.Logger.Debug("{screenInformation}", this.screenInformation);
     }
 
     /// <summary>
@@ -65,8 +67,11 @@ public class ApplicationService
                 // enable physical monitors currently visited by the mouse cursor
                 foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
                 {
-                    Console.WriteLine(
-                        $"PhysicalMonitor #{physicalMonitor.Handle}: Mouse cursor position ({currentCursorPosition.X}x{currentCursorPosition.Y})"
+                    Log.Logger.Debug(
+                        "PhysicalMonitor #{physicalMonitorHandle}: Mouse cursor position ({x}x{y})",
+                        physicalMonitor.Handle,
+                        currentCursorPosition.X,
+                        currentCursorPosition.Y
                     );
                     isMonitorNeeded[physicalMonitor.Handle] = true;
                 }
@@ -148,23 +153,43 @@ public class ApplicationService
                 )
             )
             {
-                Console.WriteLine(
-                    $"Blacklisted ProcessName: \"{process.ProcessName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})"
+                Log.Logger.Debug(
+                    "Blacklisted ProcessName: \"{processName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})",
+                    process.ProcessName,
+                    windowText,
+                    windowHandle
                 );
-                Console.WriteLine(
-                    $"\tdwStyle: {windowInfo.dwStyle}, dwExStyle: {windowInfo.dwExStyle.ToHexString()}, Pos: ({windowInfo.rcWindow.X}, {windowInfo.rcWindow.Y}), Size: {windowInfo.rcWindow.Width}x{windowInfo.rcWindow.Height}"
+                Log.Logger.Debug(
+                    "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
+                    windowInfo.dwStyle,
+                    windowInfo.dwExStyle.ToHexString(),
+                    windowInfo.rcWindow.X,
+                    windowInfo.rcWindow.Y,
+                    windowInfo.rcWindow.Width,
+                    windowInfo.rcWindow.Height
                 );
                 continue;
             }
 
             foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
             {
-                Console.WriteLine(
-                    $"PhysicalMonitor #{physicalMonitor.Handle}: ProcessName: \"{process.ProcessName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})"
+                Log.Logger.Debug(
+                    "PhysicalMonitor #{physicalMonitorHandle}: ProcessName: \"{processName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})",
+                    physicalMonitor.Handle,
+                    process.ProcessName,
+                    windowText,
+                    windowHandle
                 );
-                Console.WriteLine(
-                    $"\tdwStyle: {windowInfo.dwStyle}, dwExStyle: {windowInfo.dwExStyle.ToHexString()}, Pos: ({windowInfo.rcWindow.X}, {windowInfo.rcWindow.Y}), Size: {windowInfo.rcWindow.Width}x{windowInfo.rcWindow.Height}"
+                Log.Logger.Debug(
+                    "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
+                    windowInfo.dwStyle,
+                    windowInfo.dwExStyle.ToHexString(),
+                    windowInfo.rcWindow.X,
+                    windowInfo.rcWindow.Y,
+                    windowInfo.rcWindow.Width,
+                    windowInfo.rcWindow.Height
                 );
+
                 isMonitorNeeded[physicalMonitor.Handle] = true;
             }
         }
@@ -175,26 +200,32 @@ public class ApplicationService
             {
                 try
                 {
-                    Console.WriteLine($"Turning on physical monitor #{kv.Key}");
+                    Log.Logger.Information(
+                        "Turning on physical monitor #{physicalMonitorHandle}",
+                        kv.Key
+                    );
+
                     TurnOnMonitor(kv.Key);
                 }
-                catch (InvalidOperationException e)
+                catch (Exception e)
                 {
-                    Console.WriteLine(e.ToString());
-                    Console.WriteLine(e.StackTrace);
+                    Log.Logger.Error("{exception}", e);
                 }
             }
             else
             {
-                Console.WriteLine($"Turning off physical monitor #{kv.Key}");
+                Log.Logger.Information(
+                    "Turning off physical monitor #{physicalMonitorHandle}",
+                    kv.Key
+                );
+
                 try
                 {
                     TurnOffMonitor(kv.Key);
                 }
-                catch (InvalidOperationException e)
+                catch (Exception e)
                 {
-                    Console.WriteLine(e.ToString());
-                    Console.WriteLine(e.StackTrace);
+                    Log.Logger.Error("{exception}", e);
                 }
             }
         }
