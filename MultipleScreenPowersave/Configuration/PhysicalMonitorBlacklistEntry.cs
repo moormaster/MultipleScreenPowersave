@@ -40,16 +40,9 @@ public class PhysicalMonitorBlacklistEntry
     {
         if (this.Description != null)
         {
-            if (
-                !displayMonitor.PhysicalMonitors.Any(physicalMonitor =>
-                {
-                    if (!this.Description.IsMatch(physicalMonitor.Description))
-                        return false;
-
-                    return true;
-                })
-            )
-                return false;
+            return displayMonitor.PhysicalMonitors.Any(physicalMonitor =>
+                this.Description.IsMatch(physicalMonitor.Description)
+            );
         }
 
         return true;
