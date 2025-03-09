@@ -11,24 +11,41 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
+/// <summary>
+/// ApplicationService providing functions to turn off Monitors based on activity.
+/// </summary>
 public class ApplicationService
 {
     private const int MainWindowHandleCacheLifetimeMs = 60000;
 
     private readonly ScreenInformation screenInformation;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ApplicationService"/> class.
+    /// </summary>
     public ApplicationService()
     {
-        Console.WriteLine($"Using configuration file: {ConfigurationQueryFactory.GetConfigurationFileName()}");
+        Console.WriteLine(
+            $"Using configuration file: {ConfigurationQueryFactory.GetConfigurationFileName()}"
+        );
 
         this.screenInformation = ScreenQuery.GetScreenInformation();
         Console.WriteLine(this.screenInformation);
     }
 
+    /// <summary>
+    /// Turns on physical monitors that currently
+    ///     - show at least one window,
+    ///     - show the mouse cursor.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
     public void TurnOnOnlyUsedMonitors()
     {
-        IDictionary<PhysicalMonitorHandle, bool> isMonitorNeeded = this.screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
-        BlacklistConfiguration blacklist = ConfigurationQueryFactory.GetConfigurationQuery().GetBlacklist();
+        Dictionary<PhysicalMonitorHandle, bool> isMonitorNeeded =
+            this.screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
+        BlacklistConfiguration blacklist = ConfigurationQueryFactory
+            .GetConfigurationQuery()
+            .GetBlacklist();
 
         foreach (var displayMonitor in this.screenInformation.DisplayMonitors)
         {
@@ -48,7 +65,9 @@ public class ApplicationService
                 // enable physical monitors currently visited by the mouse cursor
                 foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
                 {
-                    Console.WriteLine($"PhysicalMonitor #{physicalMonitor.Handle}: Mouse cursor position ({currentCursorPosition.X}x{currentCursorPosition.Y})");
+                    Console.WriteLine(
+                        $"PhysicalMonitor #{physicalMonitor.Handle}: Mouse cursor position ({currentCursorPosition.X}x{currentCursorPosition.Y})"
+                    );
                     isMonitorNeeded[physicalMonitor.Handle] = true;
                 }
             }
@@ -70,7 +89,8 @@ public class ApplicationService
             uint processId;
             unsafe
             {
-                PInvoke.GetWindowThreadProcessId(new HWND(windowHandle), &processId);
+                var result = PInvoke.GetWindowThreadProcessId(new HWND(windowHandle), &processId);
+                ThrowHelper.ThrowLastErrorIfResultIsZero(result);
             }
 
             Process process;
@@ -91,9 +111,15 @@ public class ApplicationService
             string windowText;
             unsafe
             {
-                fixed (char* windowTextBuffer = new char[windowTextLength+1])
+                fixed (char* windowTextBuffer = new char[windowTextLength + 1])
                 {
-                    PInvoke.GetWindowText(new HWND(windowHandle), windowTextBuffer, windowTextLength+1);
+                    var result = PInvoke.GetWindowText(
+                        new HWND(windowHandle),
+                        windowTextBuffer,
+                        windowTextLength + 1
+                    );
+                    ThrowHelper.ThrowLastErrorIfResultIsZero(result);
+
                     windowText = new string(windowTextBuffer);
                 }
             }
@@ -111,19 +137,34 @@ public class ApplicationService
 
             // hacky way to get the display monitor handle
             var displayMonitorHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());
-            var displayMonitor = this.screenInformation.DisplayMonitorByHandle[displayMonitorHandle];
+            var displayMonitor = this.screenInformation.DisplayMonitorByHandle[
+                displayMonitorHandle
+            ];
 
-            if (IsBlacklisted(blacklist, new WindowProcessInformation(process.ProcessName, windowText)))
+            if (
+                IsBlacklisted(
+                    blacklist,
+                    new WindowProcessInformation(process.ProcessName, windowText)
+                )
+            )
             {
-                Console.WriteLine($"Blacklisted ProcessName: \"{process.ProcessName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})");
-                Console.WriteLine($"\tdwStyle: {windowInfo.dwStyle}, dwExStyle: {windowInfo.dwExStyle.ToHexString()}, Pos: ({windowInfo.rcWindow.X}, {windowInfo.rcWindow.Y}), Size: {windowInfo.rcWindow.Width}x{windowInfo.rcWindow.Height}");
+                Console.WriteLine(
+                    $"Blacklisted ProcessName: \"{process.ProcessName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})"
+                );
+                Console.WriteLine(
+                    $"\tdwStyle: {windowInfo.dwStyle}, dwExStyle: {windowInfo.dwExStyle.ToHexString()}, Pos: ({windowInfo.rcWindow.X}, {windowInfo.rcWindow.Y}), Size: {windowInfo.rcWindow.Width}x{windowInfo.rcWindow.Height}"
+                );
                 continue;
             }
 
             foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
             {
-                Console.WriteLine($"PhysicalMonitor #{physicalMonitor.Handle}: ProcessName: \"{process.ProcessName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})");
-                Console.WriteLine($"\tdwStyle: {windowInfo.dwStyle}, dwExStyle: {windowInfo.dwExStyle.ToHexString()}, Pos: ({windowInfo.rcWindow.X}, {windowInfo.rcWindow.Y}), Size: {windowInfo.rcWindow.Width}x{windowInfo.rcWindow.Height}");
+                Console.WriteLine(
+                    $"PhysicalMonitor #{physicalMonitor.Handle}: ProcessName: \"{process.ProcessName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})"
+                );
+                Console.WriteLine(
+                    $"\tdwStyle: {windowInfo.dwStyle}, dwExStyle: {windowInfo.dwExStyle.ToHexString()}, Pos: ({windowInfo.rcWindow.X}, {windowInfo.rcWindow.Y}), Size: {windowInfo.rcWindow.Width}x{windowInfo.rcWindow.Height}"
+                );
                 isMonitorNeeded[physicalMonitor.Handle] = true;
             }
         }
@@ -149,13 +190,13 @@ public class ApplicationService
                 try
                 {
                     TurnOffMonitor(kv.Key);
-                    }
-                    catch (InvalidOperationException e)
-                    {
-                        Console.WriteLine(e.ToString());
-                        Console.WriteLine(e.StackTrace);
-                    }
                 }
+                catch (InvalidOperationException e)
+                {
+                    Console.WriteLine(e.ToString());
+                    Console.WriteLine(e.StackTrace);
+                }
+            }
         }
     }
 
@@ -171,12 +212,18 @@ public class ApplicationService
         }
     }
 
-    private static bool IsBlacklisted(BlacklistConfiguration blacklist, WindowProcessInformation windowProcessInformation)
+    private static bool IsBlacklisted(
+        BlacklistConfiguration blacklist,
+        WindowProcessInformation windowProcessInformation
+    )
     {
         return blacklist.Windows.Any(windowEntry => windowEntry.IsMatch(windowProcessInformation));
     }
 
-    private static bool IsBlacklisted(BlacklistConfiguration blacklist, DisplayMonitorInformation displayMonitor)
+    private static bool IsBlacklisted(
+        BlacklistConfiguration blacklist,
+        DisplayMonitorInformation displayMonitor
+    )
     {
         return blacklist.DisplayMonitors.Any(monitorEntry => monitorEntry.IsMatch(displayMonitor));
     }
@@ -190,15 +237,18 @@ public class ApplicationService
     {
         var hresult = PInvoke.SetVCPFeature(
             (HANDLE)monitor.Value,
-
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
             FeatureConstants.PowerMode,
-
             // https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L2635
-            PowerModeValueConstants.DpmsOff);
+            PowerModeValueConstants.DpmsOff
+        );
 
         if (hresult != 1)
-            throw new InvalidOperationException($"Failed to turn off monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}");
+        {
+            throw new InvalidOperationException(
+                $"Failed to turn off monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}"
+            );
+        }
     }
 
     /// <summary>
@@ -210,14 +260,17 @@ public class ApplicationService
     {
         var hresult = PInvoke.SetVCPFeature(
             (HANDLE)monitor.Value,
-
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
             FeatureConstants.PowerMode,
-
             // https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L2635
-            PowerModeValueConstants.DpmOn);
+            PowerModeValueConstants.DpmOn
+        );
 
         if (hresult != 1)
-            throw new InvalidOperationException($"Failed to turn on monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}");
+        {
+            throw new InvalidOperationException(
+                $"Failed to turn on monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}"
+            );
+        }
     }
 }

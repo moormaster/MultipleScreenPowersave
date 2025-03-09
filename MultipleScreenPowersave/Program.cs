@@ -3,8 +3,14 @@
 using System.Threading;
 using MultipleScreenPowersave.App;
 
-public static partial class Program
+/// <summary>
+/// Main class.
+/// </summary>
+public static class Program
 {
+    /// <summary>
+    /// Main entry method.
+    /// </summary>
     public static void Main()
     {
         var sleepTimeMs = 1000;

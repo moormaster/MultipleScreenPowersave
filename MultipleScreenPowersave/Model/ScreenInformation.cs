@@ -3,12 +3,23 @@
 using System.Text;
 using CommunityToolkit.Diagnostics;
 using MultipleScreenPowersave.Model.Handles;
+using MultipleScreenPowersave.Query;
 
+/// <summary>
+/// Dto returned by <see cref="ScreenQuery.GetScreenInformation"/>.
+/// </summary>
 public class ScreenInformation
 {
     private readonly List<DisplayMonitorInformation> displayMonitors = [];
-    private readonly Dictionary<DisplayMonitorHandle, DisplayMonitorInformation> displayMonitorByHandle = [];
+    private readonly Dictionary<
+        DisplayMonitorHandle,
+        DisplayMonitorInformation
+    > displayMonitorByHandle = [];
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ScreenInformation"/> class.
+    /// </summary>
+    /// <param name="displayMonitors">Enumerable of all DisplayMonitors.</param>
     public ScreenInformation(IEnumerable<DisplayMonitorInformation> displayMonitors)
     {
         Guard.IsNotNull(displayMonitors);
@@ -19,14 +30,32 @@ public class ScreenInformation
             this.displayMonitorByHandle.Add(monitor.Handle, monitor);
     }
 
+    /// <summary>
+    /// Gets the enumerable of all PhysicalMonitors.
+    /// </summary>
     public IEnumerable<PhysicalMonitorInformation> PhysicalMonitors
     {
         get => this.displayMonitors.SelectMany(monitor => monitor.PhysicalMonitors);
     }
 
-    public IEnumerable<DisplayMonitorInformation> DisplayMonitors { get => this.displayMonitors; }
+    /// <summary>
+    /// Gets the enumerable of all DisplayMonitors.
+    /// </summary>
+    public IEnumerable<DisplayMonitorInformation> DisplayMonitors
+    {
+        get => this.displayMonitors;
+    }
 
-    public IReadOnlyDictionary<DisplayMonitorHandle, DisplayMonitorInformation> DisplayMonitorByHandle { get => this.displayMonitorByHandle; }
+    /// <summary>
+    /// Gets the dictionary mapping each DisplayMonitorHandle to a DisplayMonitorInformation.
+    /// </summary>
+    public IReadOnlyDictionary<
+        DisplayMonitorHandle,
+        DisplayMonitorInformation
+    > DisplayMonitorByHandle
+    {
+        get => this.displayMonitorByHandle;
+    }
 
     /// <inheritdoc/>
     public override string? ToString()

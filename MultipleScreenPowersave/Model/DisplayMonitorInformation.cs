@@ -2,12 +2,31 @@
 
 using System.Text;
 using MultipleScreenPowersave.Model.Handles;
+using MultipleScreenPowersave.Query;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 
+/// <summary>
+/// Dto returned by <see cref="ScreenQuery.GetScreenInformation"/>.
+/// </summary>
 public class DisplayMonitorInformation
 {
     private readonly List<PhysicalMonitorInformation> physicalMonitors = [];
 
-    public DisplayMonitorInformation(DisplayMonitorHandle handle, bool isPrimary, Rectangle monitorRectangle, IEnumerable<PhysicalMonitorInformation> physicalMonitors)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DisplayMonitorInformation"/> class.
+    /// </summary>
+    /// <param name="handle">DisplayMonitorHandle as set by the lpfnEnum callback of <see cref="PInvoke.EnumDisplayMonitors(HDC, RECT?, MONITORENUMPROC, LPARAM)"/>.</param>
+    /// <param name="isPrimary">Value indicating whether the current DisplayMonitor is the primary one.</param>
+    /// <param name="monitorRectangle">MonitorRectangle (position and dimension) of the DisplayMonitor.</param>
+    /// <param name="physicalMonitors">Enumerable of all PhysicalMonitors belonging to this DisplayMonitor.</param>
+    public DisplayMonitorInformation(
+        DisplayMonitorHandle handle,
+        bool isPrimary,
+        Rectangle monitorRectangle,
+        IEnumerable<PhysicalMonitorInformation> physicalMonitors
+    )
     {
         this.Handle = handle;
         this.IsPrimary = isPrimary;
@@ -16,16 +35,33 @@ public class DisplayMonitorInformation
         this.physicalMonitors.AddRange(physicalMonitors);
     }
 
+    /// <summary>
+    /// Gets the DisplayMonitor as set by the lpfnEnum callback of <see cref="PInvoke.EnumDisplayMonitors(HDC, RECT?, MONITORENUMPROC, LPARAM)"/>.
+    /// </summary>
     public DisplayMonitorHandle Handle { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether the current DisplayMonitor is the primary one.
+    /// </summary>
     public bool IsPrimary { get; }
 
+    /// <summary>
+    /// Gets the MonitorRectangle (position and dimension) of the DisplayMonitor.
+    /// </summary>
     public Rectangle MonitorRectangle { get; }
 
-    public IEnumerable<PhysicalMonitorInformation> PhysicalMonitors { get => this.physicalMonitors; }
+    /// <summary>
+    /// Gets the enumerable of all PhysicalMonitors belonging to this DisplayMonitor.
+    /// </summary>
+    public IEnumerable<PhysicalMonitorInformation> PhysicalMonitors
+    {
+        get => this.physicalMonitors;
+    }
 
-    public Size Size
-        => this.MonitorRectangle.Size;
+    /// <summary>
+    /// Gets the size (dimensions) of the DisplayMonitor.
+    /// </summary>
+    public Size Size => this.MonitorRectangle.Size;
 
     /// <inheritdoc/>
     public override string? ToString()
