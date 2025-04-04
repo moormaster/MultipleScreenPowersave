@@ -19,8 +19,6 @@ public class ApplicationService
 {
     private const int MainWindowHandleCacheLifetimeMs = 60000;
 
-    private readonly ScreenInformation screenInformation;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
     /// </summary>
@@ -31,8 +29,8 @@ public class ApplicationService
             ConfigurationQueryFactory.GetConfigurationFileName()
         );
 
-        this.screenInformation = ScreenQuery.GetScreenInformation();
-        Log.Logger.Debug("{screenInformation}", this.screenInformation);
+        var screenInformation = this.GetScreenInformation();
+        Log.Logger.Debug("{screenInformation}", screenInformation);
     }
 
     /// <summary>
@@ -43,13 +41,15 @@ public class ApplicationService
     /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
     public void TurnOnOnlyUsedMonitors()
     {
+        ScreenInformation screenInformation = this.GetScreenInformation();
+
         Dictionary<PhysicalMonitorHandle, bool> isMonitorNeeded =
-            this.screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
+            screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
         BlacklistConfiguration blacklist = ConfigurationQueryFactory
             .GetConfigurationQuery()
             .GetBlacklist();
 
-        foreach (var displayMonitor in this.screenInformation.DisplayMonitors)
+        foreach (var displayMonitor in screenInformation.DisplayMonitors)
         {
             if (IsBlacklisted(blacklist, displayMonitor))
             {
@@ -60,7 +60,7 @@ public class ApplicationService
         }
 
         PInvoke.GetCursorPos(out Point currentCursorPosition);
-        foreach (var displayMonitor in this.screenInformation.DisplayMonitors)
+        foreach (var displayMonitor in screenInformation.DisplayMonitors)
         {
             if (displayMonitor.MonitorRectangle.Contains(currentCursorPosition))
             {
@@ -142,9 +142,7 @@ public class ApplicationService
 
             // hacky way to get the display monitor handle
             var displayMonitorHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());
-            var displayMonitor = this.screenInformation.DisplayMonitorByHandle[
-                displayMonitorHandle
-            ];
+            var displayMonitor = screenInformation.DisplayMonitorByHandle[displayMonitorHandle];
 
             if (
                 IsBlacklisted(
@@ -237,7 +235,7 @@ public class ApplicationService
     /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
     public void TurnOnAllMonitors()
     {
-        foreach (var monitor in this.screenInformation.PhysicalMonitors)
+        foreach (var monitor in this.GetScreenInformation().PhysicalMonitors)
         {
             TurnOnMonitor(monitor.Handle);
         }
@@ -303,5 +301,10 @@ public class ApplicationService
                 $"Failed to turn on monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}"
             );
         }
+    }
+
+    private ScreenInformation GetScreenInformation()
+    {
+        return ScreenQuery.GetScreenInformation();
     }
 }
