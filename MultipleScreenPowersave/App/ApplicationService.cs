@@ -193,18 +193,27 @@ public class ApplicationService
             }
         }
 
-        foreach (var kv in isMonitorNeeded)
+        var physicalMonitorByHandle = screenInformation.PhysicalMonitorByHandle;
+        var isMonitorNeededWithPhysicalMonitorInformation = isMonitorNeeded.Join(
+            screenInformation.PhysicalMonitorByHandle,
+            outerKeySelector: physicalMonitorByHandleItem => physicalMonitorByHandleItem.Key,
+            innerKeySelector: isMonitorNeeded => isMonitorNeeded.Key,
+            resultSelector: (isMonitorNeeded, physicalMonitor) =>
+                (IsMonitorNeeded: isMonitorNeeded.Value, PhysicalMonitor: physicalMonitor.Value)
+        );
+
+        foreach (var kv in isMonitorNeededWithPhysicalMonitorInformation)
         {
-            if (kv.Value)
+            if (kv.IsMonitorNeeded)
             {
                 try
                 {
                     Log.Logger.Information(
                         "Turning on physical monitor #{physicalMonitorHandle}",
-                        kv.Key
+                        kv.PhysicalMonitor.Handle
                     );
 
-                    TurnOnMonitor(kv.Key);
+                    TurnOnMonitor(kv.PhysicalMonitor);
                 }
                 catch (Exception e)
                 {
@@ -215,12 +224,12 @@ public class ApplicationService
             {
                 Log.Logger.Information(
                     "Turning off physical monitor #{physicalMonitorHandle}",
-                    kv.Key
+                    kv.PhysicalMonitor.Handle
                 );
 
                 try
                 {
-                    TurnOffMonitor(kv.Key);
+                    TurnOffMonitor(kv.PhysicalMonitor);
                 }
                 catch (Exception e)
                 {
@@ -238,7 +247,7 @@ public class ApplicationService
     {
         foreach (var monitor in this.GetScreenInformation().PhysicalMonitors)
         {
-            TurnOnMonitor(monitor.Handle);
+            TurnOnMonitor(monitor);
         }
     }
 
@@ -263,10 +272,10 @@ public class ApplicationService
     /// </summary>
     /// <param name="monitor">Handle to the physical monitor.</param>
     /// <exception cref="InvalidOperationException">Failure to turn off monitor.</exception>
-    private static void TurnOffMonitor(PhysicalMonitorHandle monitor)
+    private static void TurnOffMonitor(PhysicalMonitorInformation monitor)
     {
         var hresult = PInvoke.SetVCPFeature(
-            (HANDLE)monitor.Value,
+            (HANDLE)monitor.Handle.Value,
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
             FeatureConstants.PowerMode,
             // https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L2635
@@ -276,7 +285,7 @@ public class ApplicationService
         if (hresult != 1)
         {
             throw new InvalidOperationException(
-                $"Failed to turn off monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}"
+                $"Failed to turn off monitor #{monitor.Handle.Value}: HRESULT={hresult.ToHexString()}"
             );
         }
     }
@@ -286,10 +295,10 @@ public class ApplicationService
     /// </summary>
     /// <param name="monitor">Handle to the physical monitor.</param>
     /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
-    private static void TurnOnMonitor(PhysicalMonitorHandle monitor)
+    private static void TurnOnMonitor(PhysicalMonitorInformation monitor)
     {
         var hresult = PInvoke.SetVCPFeature(
-            (HANDLE)monitor.Value,
+            (HANDLE)monitor.Handle.Value,
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
             FeatureConstants.PowerMode,
             // https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L2635
@@ -299,7 +308,7 @@ public class ApplicationService
         if (hresult != 1)
         {
             throw new InvalidOperationException(
-                $"Failed to turn on monitor #{monitor.Value}: HRESULT={hresult.ToHexString()}"
+                $"Failed to turn on monitor #{monitor.Handle.Value}: HRESULT={hresult.ToHexString()}"
             );
         }
     }

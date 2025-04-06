@@ -39,6 +39,14 @@ public class ScreenInformation
     }
 
     /// <summary>
+    /// Gets the dictionary mapping each <see cref="PhysicalMonitorHandle"/> to the corresponding <see cref="PhysicalMonitorInformation"/>.
+    /// </summary>
+    public IDictionary<PhysicalMonitorHandle, PhysicalMonitorInformation> PhysicalMonitorByHandle
+    {
+        get => this.PhysicalMonitors.ToDictionary(keySelector: monitor => monitor.Handle);
+    }
+
+    /// <summary>
     /// Gets the enumerable of all DisplayMonitors.
     /// </summary>
     public IEnumerable<DisplayMonitorInformation> DisplayMonitors
@@ -47,7 +55,7 @@ public class ScreenInformation
     }
 
     /// <summary>
-    /// Gets the dictionary mapping each DisplayMonitorHandle to a DisplayMonitorInformation.
+    /// Gets the dictionary mapping each <see cref="DisplayMonitorHandle"/> to a <see cref="DisplayMonitorInformation"/>.
     /// </summary>
     public IReadOnlyDictionary<
         DisplayMonitorHandle,
