@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>True</UseWindowsForms>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <StartupObject>MultipleScreenPowersave.Program</StartupObject>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -32,7 +31,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
     <ProjectReference Include="..\MultipleScreenPowersave.Win32\MultipleScreenPowersave.Win32.csproj" />
   </ItemGroup>
   <ItemGroup>

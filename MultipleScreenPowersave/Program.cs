@@ -32,7 +32,9 @@ public static class Program
         var hostBuilder = Host.CreateApplicationBuilder();
         hostBuilder
             .Services.AddMultipleScreenPowerSaveBackgroundService()
+#if WINDOWS
             .AddMultipleScreenPowerSaveWindowsPlatformServices()
+#endif
             .AddSerilog(
                 (services, configuration) =>
                 {

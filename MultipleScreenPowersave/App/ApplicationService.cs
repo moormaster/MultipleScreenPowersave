@@ -5,11 +5,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Maui.Graphics;
 using MultipleScreenPowersave.Configuration;
-using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
 using MultipleScreenPowersave.Ui;
+#if WINDOWS
+using MultipleScreenPowersave.Extensions;
+#endif
+
 
 /// <summary>
 /// ApplicationService providing functions to turn off Monitors based on activity.
