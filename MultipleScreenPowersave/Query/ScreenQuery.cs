@@ -1,6 +1,7 @@
 ﻿namespace MultipleScreenPowersave.Query;
 
 using System.Runtime.InteropServices;
+using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using Windows.Win32;
@@ -23,7 +24,7 @@ public static class ScreenQuery
 
         unsafe
         {
-            Dictionary<HMONITOR, Rectangle> displayMonitorRectangles = [];
+            Dictionary<HMONITOR, Microsoft.Maui.Graphics.Rect> displayMonitorRectangles = [];
 
             // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enumdisplaymonitors
             PInvoke.EnumDisplayMonitors(
@@ -38,7 +39,7 @@ public static class ScreenQuery
                 {
                     displayMonitorRectangles.Add(
                         displayMonitorHandle,
-                        (Rectangle)(*displayMonitor)
+                        ((System.Drawing.Rectangle)(*displayMonitor)).ToRect()
                     );
                     return (BOOL)true;
                 },
@@ -68,7 +69,7 @@ public static class ScreenQuery
                     new DisplayMonitorInformation(
                         new DisplayMonitorHandle((int)hMonitor),
                         isPrimary: (monitorInfo.dwFlags & PInvoke.MONITORINFOF_PRIMARY) != 0,
-                        monitorInfo.rcMonitor,
+                        monitorInfo.rcMonitor.ToRect(),
                         physicalMonitors.Select(element => new PhysicalMonitorInformation(
                             new PhysicalMonitorHandle((int)element.hPhysicalMonitor),
                             new DisplayMonitorHandle((int)hMonitor),

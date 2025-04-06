@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using MultipleScreenPowersave.Configuration;
+using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
@@ -59,10 +60,10 @@ public class ApplicationService
             }
         }
 
-        PInvoke.GetCursorPos(out Point currentCursorPosition);
+        PInvoke.GetCursorPos(out System.Drawing.Point currentCursorPosition);
         foreach (var displayMonitor in screenInformation.DisplayMonitors)
         {
-            if (displayMonitor.MonitorRectangle.Contains(currentCursorPosition))
+            if (displayMonitor.MonitorRectangle.Contains(currentCursorPosition.ToPoint()))
             {
                 // enable physical monitors currently visited by the mouse cursor
                 foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
@@ -138,7 +139,7 @@ public class ApplicationService
             if (windowInfo.rcWindow.Width == 0 || windowInfo.rcWindow.Height == 0)
                 continue;
 
-            var screenOfApp = Screen.FromHandle(windowHandle);
+            var screenOfApp = System.Windows.Forms.Screen.FromHandle(windowHandle);
 
             // hacky way to get the display monitor handle
             var displayMonitorHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());

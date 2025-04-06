@@ -1,6 +1,7 @@
 ﻿namespace MultipleScreenPowersave.Model;
 
 using System.Text;
+using Microsoft.Maui.Graphics;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
 using Windows.Win32;
@@ -24,7 +25,7 @@ public class DisplayMonitorInformation
     public DisplayMonitorInformation(
         DisplayMonitorHandle handle,
         bool isPrimary,
-        Rectangle monitorRectangle,
+        Rect monitorRectangle,
         IEnumerable<PhysicalMonitorInformation> physicalMonitors
     )
     {
@@ -48,7 +49,7 @@ public class DisplayMonitorInformation
     /// <summary>
     /// Gets the MonitorRectangle (position and dimension) of the DisplayMonitor.
     /// </summary>
-    public Rectangle MonitorRectangle { get; }
+    public Rect MonitorRectangle { get; }
 
     /// <summary>
     /// Gets the enumerable of all PhysicalMonitors belonging to this DisplayMonitor.
