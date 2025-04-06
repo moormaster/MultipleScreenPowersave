@@ -6,7 +6,7 @@ using MultipleScreenPowersave.Configuration;
 using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
-using MultipleScreenPowersave.Query;
+using MultipleScreenPowersave.Query.WindowsImpl;
 using MultipleScreenPowersave.VCP;
 using Serilog;
 using Windows.Win32;
@@ -30,7 +30,7 @@ public class ApplicationService
             ConfigurationQueryFactory.GetConfigurationFileName()
         );
 
-        var screenInformation = this.GetScreenInformation();
+        var screenInformation = GetScreenInformation();
         Log.Logger.Debug("{screenInformation}", screenInformation);
     }
 
@@ -42,7 +42,7 @@ public class ApplicationService
     /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
     public void TurnOnOnlyUsedMonitors()
     {
-        ScreenInformation screenInformation = this.GetScreenInformation();
+        ScreenInformation screenInformation = GetScreenInformation();
 
         Dictionary<PhysicalMonitorHandle, bool> isMonitorNeededByHandle =
             screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
@@ -257,15 +257,10 @@ public class ApplicationService
     /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
     public void TurnOnAllMonitors()
     {
-        foreach (var monitor in this.GetScreenInformation().PhysicalMonitors)
+        foreach (var monitor in GetScreenInformation().PhysicalMonitors)
         {
             TurnOnMonitor(monitor);
         }
-    }
-
-    private ScreenInformation GetScreenInformation()
-    {
-        return ScreenQuery.GetScreenInformation();
     }
 
     private static bool IsBlacklisted(
@@ -330,8 +325,8 @@ public class ApplicationService
         }
     }
 
-    private ScreenInformation GetScreenInformation()
+    private static ScreenInformation GetScreenInformation()
     {
-        return ScreenQuery.GetScreenInformation();
+        return new ScreenQuery().GetScreenInformation();
     }
 }

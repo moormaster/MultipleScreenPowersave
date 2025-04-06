@@ -9,7 +9,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 
 /// <summary>
-/// Dto returned by <see cref="ScreenQuery.GetScreenInformation"/>.
+/// Dto returned by <see cref="IScreenQuery.GetScreenInformation"/>.
 /// </summary>
 public class DisplayMonitorInformation
 {

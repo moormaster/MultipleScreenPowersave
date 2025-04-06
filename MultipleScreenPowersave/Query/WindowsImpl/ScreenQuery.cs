@@ -1,4 +1,4 @@
-﻿namespace MultipleScreenPowersave.Query;
+﻿namespace MultipleScreenPowersave.Query.WindowsImpl;
 
 using System.Runtime.InteropServices;
 using MultipleScreenPowersave.Extensions;
@@ -10,15 +10,15 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 
 /// <summary>
-/// Class used to query information about screens available in the system.
+/// Win32 implementation of <see cref="IScreenQuery"/>.
 /// </summary>
-public static class ScreenQuery
+public class ScreenQuery : IScreenQuery
 {
     /// <summary>
     /// Determines screens available.
     /// </summary>
     /// <returns>ScreenInformation.</returns>
-    public static ScreenInformation GetScreenInformation()
+    public ScreenInformation GetScreenInformation()
     {
         List<DisplayMonitorInformation> displayMonitors = [];
 
@@ -39,7 +39,7 @@ public static class ScreenQuery
                 {
                     displayMonitorRectangles.Add(
                         displayMonitorHandle,
-                        ((System.Drawing.Rectangle)(*displayMonitor)).ToRect()
+                        ((Rectangle)(*displayMonitor)).ToRect()
                     );
                     return (BOOL)true;
                 },

@@ -9,7 +9,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 
 /// <summary>
-/// Dto returned by <see cref="ScreenQuery.GetScreenInformation"/>.
+/// Dto returned by <see cref="IScreenQuery.GetScreenInformation"/>.
 /// </summary>
 /// <param name="handle">PhysicalMonitorHandle as set by <see cref="PInvoke.GetPhysicalMonitorsFromHMONITOR(HMONITOR, Span{PHYSICAL_MONITOR})"/>.</param>
 /// <param name="displayMonitor">DisplayMonitorHandle as set by the lpfnEnum callback of <see cref="PInvoke.EnumDisplayMonitors(HDC, RECT?, MONITORENUMPROC, LPARAM)"/>.</param>

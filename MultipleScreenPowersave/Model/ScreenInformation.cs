@@ -6,7 +6,7 @@ using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
 
 /// <summary>
-/// Dto returned by <see cref="ScreenQuery.GetScreenInformation"/>.
+/// Dto returned by <see cref="IScreenQuery.GetScreenInformation"/>.
 /// </summary>
 public class ScreenInformation
 {
