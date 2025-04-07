@@ -1,6 +1,5 @@
 ﻿namespace MultipleScreenPowersave.App;
 
-using System.Diagnostics;
 using CommunityToolkit.Diagnostics;
 using MultipleScreenPowersave.Configuration;
 using MultipleScreenPowersave.Extensions;
@@ -11,7 +10,6 @@ using MultipleScreenPowersave.VCP;
 using Serilog;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Windows.Win32.UI.WindowsAndMessaging;
 
 /// <summary>
 /// ApplicationService providing functions to turn off Monitors based on activity.
@@ -79,82 +77,13 @@ public class ApplicationService
             }
         }
 
-        List<nint> windowHandles = [];
+        var windowsShown = GetWindows();
 
-        PInvoke.EnumWindows(
-            (windowHandle, param1) =>
-            {
-                windowHandles.Add(windowHandle);
-                return true;
-            },
-            new LPARAM(0)
-        );
-
-        foreach (var windowHandle in windowHandles)
+        foreach (var windowProcessInformation in windowsShown)
         {
-            uint processId;
-            unsafe
-            {
-                var result = PInvoke.GetWindowThreadProcessId(new HWND(windowHandle), &processId);
-                ThrowHelper.ThrowLastErrorIfResultIsZero(result);
-            }
-
-            Process process;
-            try
-            {
-                process = Process.GetProcessById((int)processId);
-            }
-            catch (ArgumentException)
-            {
-                // process is not active (anymore) - continue
-                continue;
-            }
-
-            WindowProcessInformation windowProcessInformation;
-            {
-                var windowInfo = default(WINDOWINFO);
-                PInvoke.GetWindowInfo(new HWND(windowHandle), ref windowInfo);
-
-                var windowTextLength = PInvoke.GetWindowTextLength(new HWND(windowHandle));
-                string windowText;
-                unsafe
-                {
-                    fixed (char* windowTextBuffer = new char[windowTextLength + 1])
-                    {
-                        var result = PInvoke.GetWindowText(
-                            new HWND(windowHandle),
-                            windowTextBuffer,
-                            windowTextLength + 1
-                        );
-                        ThrowHelper.ThrowLastErrorIfResultIsZero(result);
-
-                        windowText = new string(windowTextBuffer);
-                    }
-                }
-
-                windowProcessInformation = new WindowProcessInformation(
-                    new WindowHandle((int)windowHandle),
-                    process.ProcessName,
-                    windowText,
-                    (uint)windowInfo.dwStyle,
-                    (uint)windowInfo.dwExStyle,
-                    windowInfo.rcWindow.ToRect()
-                );
-            }
-
-            if ((windowProcessInformation.DwStyle!.Value & (uint)WINDOW_STYLE.WS_VISIBLE) == 0)
-                continue;
-
-            if ((windowProcessInformation.DwStyle!.Value & (uint)WINDOW_STYLE.WS_MINIMIZE) > 0)
-                continue;
-
-            if (
-                windowProcessInformation.Rectangle.Width == 0
-                || windowProcessInformation.Rectangle.Height == 0
-            )
-                continue;
-
-            var screenOfApp = System.Windows.Forms.Screen.FromHandle(windowHandle);
+            var screenOfApp = System.Windows.Forms.Screen.FromHandle(
+                windowProcessInformation.Handle.Value
+            );
 
             // hacky way to get the display monitor handle
             var displayMonitorHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());
@@ -164,7 +93,7 @@ public class ApplicationService
             {
                 Log.Logger.Debug(
                     "Blacklisted ProcessName: \"{processName}\" - WindowTitle: \"{windowTitle}\" (#{windowHandle})",
-                    process.ProcessName,
+                    windowProcessInformation.ProcessName,
                     windowProcessInformation.WindowTitle,
                     windowProcessInformation.Handle
                 );
@@ -185,7 +114,7 @@ public class ApplicationService
                 Log.Logger.Debug(
                     "PhysicalMonitor #{physicalMonitorHandle}: ProcessName: \"{processName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})",
                     physicalMonitor.Handle,
-                    process.ProcessName,
+                    windowProcessInformation.ProcessName,
                     windowProcessInformation.WindowTitle,
                     windowProcessInformation.Handle
                 );
@@ -328,5 +257,10 @@ public class ApplicationService
     private static ScreenInformation GetScreenInformation()
     {
         return new ScreenQuery().GetScreenInformation();
+    }
+
+    private static IEnumerable<WindowProcessInformation> GetWindows()
+    {
+        return new WindowQuery().GetWindows();
     }
 }
