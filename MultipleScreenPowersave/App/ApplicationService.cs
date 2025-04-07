@@ -44,7 +44,7 @@ public class ApplicationService
     {
         ScreenInformation screenInformation = this.GetScreenInformation();
 
-        Dictionary<PhysicalMonitorHandle, bool> isMonitorNeeded =
+        Dictionary<PhysicalMonitorHandle, bool> isMonitorNeededByHandle =
             screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
         BlacklistConfiguration blacklist = ConfigurationQueryFactory
             .GetConfigurationQuery()
@@ -56,7 +56,7 @@ public class ApplicationService
             {
                 // ensure that physical screens of blacklisted monitors never gets powered off
                 foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
-                    isMonitorNeeded[physicalMonitor.Handle] = true;
+                    isMonitorNeededByHandle[physicalMonitor.Handle] = true;
             }
         }
 
@@ -74,7 +74,7 @@ public class ApplicationService
                         currentCursorPosition.X,
                         currentCursorPosition.Y
                     );
-                    isMonitorNeeded[physicalMonitor.Handle] = true;
+                    isMonitorNeededByHandle[physicalMonitor.Handle] = true;
                 }
             }
         }
@@ -110,33 +110,48 @@ public class ApplicationService
                 continue;
             }
 
-            var windowInfo = default(WINDOWINFO);
-            PInvoke.GetWindowInfo(new HWND(windowHandle), ref windowInfo);
-
-            var windowTextLength = PInvoke.GetWindowTextLength(new HWND(windowHandle));
-            string windowText;
-            unsafe
+            WindowProcessInformation windowProcessInformation;
             {
-                fixed (char* windowTextBuffer = new char[windowTextLength + 1])
-                {
-                    var result = PInvoke.GetWindowText(
-                        new HWND(windowHandle),
-                        windowTextBuffer,
-                        windowTextLength + 1
-                    );
-                    ThrowHelper.ThrowLastErrorIfResultIsZero(result);
+                var windowInfo = default(WINDOWINFO);
+                PInvoke.GetWindowInfo(new HWND(windowHandle), ref windowInfo);
 
-                    windowText = new string(windowTextBuffer);
+                var windowTextLength = PInvoke.GetWindowTextLength(new HWND(windowHandle));
+                string windowText;
+                unsafe
+                {
+                    fixed (char* windowTextBuffer = new char[windowTextLength + 1])
+                    {
+                        var result = PInvoke.GetWindowText(
+                            new HWND(windowHandle),
+                            windowTextBuffer,
+                            windowTextLength + 1
+                        );
+                        ThrowHelper.ThrowLastErrorIfResultIsZero(result);
+
+                        windowText = new string(windowTextBuffer);
+                    }
                 }
+
+                windowProcessInformation = new WindowProcessInformation(
+                    new WindowHandle((int)windowHandle),
+                    process.ProcessName,
+                    windowText,
+                    (uint)windowInfo.dwStyle,
+                    (uint)windowInfo.dwExStyle,
+                    windowInfo.rcWindow.ToRect()
+                );
             }
 
-            if ((windowInfo.dwStyle & WINDOW_STYLE.WS_VISIBLE) == 0)
+            if ((windowProcessInformation.DwStyle!.Value & (uint)WINDOW_STYLE.WS_VISIBLE) == 0)
                 continue;
 
-            if ((windowInfo.dwStyle & WINDOW_STYLE.WS_MINIMIZE) > 0)
+            if ((windowProcessInformation.DwStyle!.Value & (uint)WINDOW_STYLE.WS_MINIMIZE) > 0)
                 continue;
 
-            if (windowInfo.rcWindow.Width == 0 || windowInfo.rcWindow.Height == 0)
+            if (
+                windowProcessInformation.Rectangle.Width == 0
+                || windowProcessInformation.Rectangle.Height == 0
+            )
                 continue;
 
             var screenOfApp = System.Windows.Forms.Screen.FromHandle(windowHandle);
@@ -145,27 +160,22 @@ public class ApplicationService
             var displayMonitorHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());
             var displayMonitor = screenInformation.DisplayMonitorByHandle[displayMonitorHandle];
 
-            if (
-                IsBlacklisted(
-                    blacklist,
-                    new WindowProcessInformation(process.ProcessName, windowText)
-                )
-            )
+            if (IsBlacklisted(blacklist, windowProcessInformation))
             {
                 Log.Logger.Debug(
-                    "Blacklisted ProcessName: \"{processName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})",
+                    "Blacklisted ProcessName: \"{processName}\" - WindowTitle: \"{windowTitle}\" (#{windowHandle})",
                     process.ProcessName,
-                    windowText,
-                    windowHandle
+                    windowProcessInformation.WindowTitle,
+                    windowProcessInformation.Handle
                 );
                 Log.Logger.Debug(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
-                    windowInfo.dwStyle,
-                    windowInfo.dwExStyle.ToHexString(),
-                    windowInfo.rcWindow.X,
-                    windowInfo.rcWindow.Y,
-                    windowInfo.rcWindow.Width,
-                    windowInfo.rcWindow.Height
+                    windowProcessInformation.DwStyle,
+                    windowProcessInformation.DwExStyle?.ToHexString(),
+                    windowProcessInformation.Rectangle.X,
+                    windowProcessInformation.Rectangle.Y,
+                    windowProcessInformation.Rectangle.Width,
+                    windowProcessInformation.Rectangle.Height
                 );
                 continue;
             }
@@ -176,25 +186,25 @@ public class ApplicationService
                     "PhysicalMonitor #{physicalMonitorHandle}: ProcessName: \"{processName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})",
                     physicalMonitor.Handle,
                     process.ProcessName,
-                    windowText,
-                    windowHandle
+                    windowProcessInformation.WindowTitle,
+                    windowProcessInformation.Handle
                 );
                 Log.Logger.Debug(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
-                    windowInfo.dwStyle,
-                    windowInfo.dwExStyle.ToHexString(),
-                    windowInfo.rcWindow.X,
-                    windowInfo.rcWindow.Y,
-                    windowInfo.rcWindow.Width,
-                    windowInfo.rcWindow.Height
+                    windowProcessInformation.DwStyle,
+                    windowProcessInformation.DwExStyle?.ToHexString(),
+                    windowProcessInformation.Rectangle.X,
+                    windowProcessInformation.Rectangle.Y,
+                    windowProcessInformation.Rectangle.Width,
+                    windowProcessInformation.Rectangle.Height
                 );
 
-                isMonitorNeeded[physicalMonitor.Handle] = true;
+                isMonitorNeededByHandle[physicalMonitor.Handle] = true;
             }
         }
 
         var physicalMonitorByHandle = screenInformation.PhysicalMonitorByHandle;
-        var isMonitorNeededWithPhysicalMonitorInformation = isMonitorNeeded.Join(
+        var isMonitorNeededWithPhysicalMonitorInformation = isMonitorNeededByHandle.Join(
             screenInformation.PhysicalMonitorByHandle,
             outerKeySelector: physicalMonitorByHandleItem => physicalMonitorByHandleItem.Key,
             innerKeySelector: isMonitorNeeded => isMonitorNeeded.Key,
@@ -202,18 +212,20 @@ public class ApplicationService
                 (IsMonitorNeeded: isMonitorNeeded.Value, PhysicalMonitor: physicalMonitor.Value)
         );
 
-        foreach (var kv in isMonitorNeededWithPhysicalMonitorInformation)
+        foreach (
+            var (isMonitorNeeded, physicalMonitor) in isMonitorNeededWithPhysicalMonitorInformation
+        )
         {
-            if (kv.IsMonitorNeeded)
+            if (isMonitorNeeded)
             {
                 try
                 {
                     Log.Logger.Information(
                         "Turning on physical monitor #{physicalMonitorHandle}",
-                        kv.PhysicalMonitor.Handle
+                        physicalMonitor.Handle
                     );
 
-                    TurnOnMonitor(kv.PhysicalMonitor);
+                    TurnOnMonitor(physicalMonitor);
                 }
                 catch (Exception e)
                 {
@@ -224,12 +236,12 @@ public class ApplicationService
             {
                 Log.Logger.Information(
                     "Turning off physical monitor #{physicalMonitorHandle}",
-                    kv.PhysicalMonitor.Handle
+                    physicalMonitor.Handle
                 );
 
                 try
                 {
-                    TurnOffMonitor(kv.PhysicalMonitor);
+                    TurnOffMonitor(physicalMonitor);
                 }
                 catch (Exception e)
                 {
