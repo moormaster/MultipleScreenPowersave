@@ -52,7 +52,11 @@ public class WindowQuery : IWindowQuery
             WindowProcessInformation windowProcessInformation;
             {
                 var windowInfo = default(WINDOWINFO);
-                PInvoke.GetWindowInfo(new HWND(windowHandle), ref windowInfo);
+                if (!PInvoke.GetWindowInfo(new HWND(windowHandle), ref windowInfo))
+                {
+                    // window is not existing (anymore) - continue
+                    continue;
+                }
 
                 var windowTextLength = PInvoke.GetWindowTextLength(new HWND(windowHandle));
                 string windowText;
