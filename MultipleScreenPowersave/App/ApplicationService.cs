@@ -87,7 +87,10 @@ public class ApplicationService
 
             // hacky way to get the display monitor handle
             var displayMonitorHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());
-            var displayMonitor = screenInformation.DisplayMonitorByHandle[displayMonitorHandle];
+            screenInformation.DisplayMonitorByHandle.TryGetValue(
+                displayMonitorHandle,
+                out var displayMonitor
+            );
 
             if (IsBlacklisted(blacklist, windowProcessInformation))
             {
@@ -98,6 +101,29 @@ public class ApplicationService
                     windowProcessInformation.Handle
                 );
                 Log.Logger.Debug(
+                    "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
+                    windowProcessInformation.DwStyle,
+                    windowProcessInformation.DwExStyle?.ToHexString(),
+                    windowProcessInformation.Rectangle.X,
+                    windowProcessInformation.Rectangle.Y,
+                    windowProcessInformation.Rectangle.Width,
+                    windowProcessInformation.Rectangle.Height
+                );
+                continue;
+            }
+
+            if (displayMonitor is null)
+            {
+                Log.Logger.Error(
+                    "Failed to determine DisplayMonitor for windowProcessInformation:"
+                );
+                Log.Logger.Error(
+                    "\tProcessName: \"{processName}\" - WindowTitle: \"{windowTitle}\" (#{windowHandle})",
+                    windowProcessInformation.ProcessName,
+                    windowProcessInformation.WindowTitle,
+                    windowProcessInformation.Handle
+                );
+                Log.Logger.Error(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
                     windowProcessInformation.DwStyle,
                     windowProcessInformation.DwExStyle?.ToHexString(),
