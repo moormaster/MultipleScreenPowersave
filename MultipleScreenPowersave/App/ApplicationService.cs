@@ -263,6 +263,11 @@ public class ApplicationService
         }
     }
 
+    private ScreenInformation GetScreenInformation()
+    {
+        return ScreenQuery.GetScreenInformation();
+    }
+
     private static bool IsBlacklisted(
         BlacklistConfiguration blacklist,
         WindowProcessInformation windowProcessInformation
