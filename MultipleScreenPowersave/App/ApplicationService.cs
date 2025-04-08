@@ -1,6 +1,7 @@
 ﻿namespace MultipleScreenPowersave.App;
 
 using CommunityToolkit.Diagnostics;
+using Microsoft.Maui.Graphics;
 using MultipleScreenPowersave.Configuration;
 using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
@@ -58,10 +59,10 @@ public class ApplicationService
             }
         }
 
-        PInvoke.GetCursorPos(out System.Drawing.Point currentCursorPosition);
+        var currentCursorPosition = GetCurrentMouseCursorPosition();
         foreach (var displayMonitor in screenInformation.DisplayMonitors)
         {
-            if (displayMonitor.MonitorRectangle.Contains(currentCursorPosition.ToPoint()))
+            if (displayMonitor.MonitorRectangle.Contains(currentCursorPosition))
             {
                 // enable physical monitors currently visited by the mouse cursor
                 foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
@@ -216,6 +217,15 @@ public class ApplicationService
         {
             TurnOnMonitor(monitor);
         }
+    }
+
+    /// <summary>
+    /// Returns the coordinates of the mouse cursor.
+    /// </summary>
+    /// <returns>Coordinates of the mouse cursor.</returns>
+    private static Point GetCurrentMouseCursorPosition()
+    {
+        return new MouseQuery().GetCurrentMouseCursorPosition();
     }
 
     private static bool IsBlacklisted(
