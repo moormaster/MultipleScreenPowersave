@@ -1,13 +1,11 @@
 ﻿namespace MultipleScreenPowersave.App;
 
 using CommunityToolkit.Diagnostics;
-using Microsoft.Maui.Graphics;
-using MultipleScreenPowersave.App.WindowsImpl;
 using MultipleScreenPowersave.Configuration;
 using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
-using MultipleScreenPowersave.Query.WindowsImpl;
+using MultipleScreenPowersave.Query;
 using Serilog;
 
 /// <summary>
@@ -18,21 +16,41 @@ public class ApplicationService
     private const int MainWindowHandleCacheLifetimeMs = 60000;
 
     private readonly IDisplayDataChannelService displayDataChannelService;
+    private readonly IMouseQuery mouseQuery;
+    private readonly IScreenQuery screenQuery;
+    private readonly IWindowQuery windowQuery;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
     /// </summary>
-    public ApplicationService()
+    /// <param name="displayDataChannelService">DisplayDataChannelService instance.</param>
+    /// <param name="mouseQuery">MouseQuery instance.</param>
+    /// <param name="screenQuery">ScreenQuery instance.</param>
+    /// <param name="windowQuery">WindowQuery instance.</param>
+    public ApplicationService(
+        IDisplayDataChannelService displayDataChannelService,
+        IMouseQuery mouseQuery,
+        IScreenQuery screenQuery,
+        IWindowQuery windowQuery
+    )
     {
+        Guard.IsNotNull(displayDataChannelService);
+        Guard.IsNotNull(mouseQuery);
+        Guard.IsNotNull(screenQuery);
+        Guard.IsNotNull(windowQuery);
+
+        this.displayDataChannelService = displayDataChannelService;
+        this.mouseQuery = mouseQuery;
+        this.screenQuery = screenQuery;
+        this.windowQuery = windowQuery;
+
         Log.Logger.Information(
             "Using configuration file: {configurationFileName}",
             ConfigurationQueryFactory.GetConfigurationFileName()
         );
 
-        var screenInformation = GetScreenInformation();
+        var screenInformation = this.screenQuery.GetScreenInformation();
         Log.Logger.Debug("{screenInformation}", screenInformation);
-
-        this.displayDataChannelService = new DisplayDataChannelService();
     }
 
     /// <summary>
@@ -43,7 +61,7 @@ public class ApplicationService
     /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
     public void TurnOnOnlyUsedMonitors()
     {
-        ScreenInformation screenInformation = GetScreenInformation();
+        ScreenInformation screenInformation = this.screenQuery.GetScreenInformation();
 
         Dictionary<PhysicalMonitorHandle, bool> isMonitorNeededByHandle =
             screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
@@ -61,7 +79,7 @@ public class ApplicationService
             }
         }
 
-        var currentCursorPosition = GetCurrentMouseCursorPosition();
+        var currentCursorPosition = this.mouseQuery.GetCurrentMouseCursorPosition();
         foreach (var displayMonitor in screenInformation.DisplayMonitors)
         {
             if (displayMonitor.MonitorRectangle.Contains(currentCursorPosition))
@@ -80,7 +98,7 @@ public class ApplicationService
             }
         }
 
-        var windowsShown = GetWindows();
+        var windowsShown = this.windowQuery.GetWindows();
 
         foreach (var windowProcessInformation in windowsShown)
         {
@@ -215,19 +233,10 @@ public class ApplicationService
     /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
     public void TurnOnAllMonitors()
     {
-        foreach (var monitor in GetScreenInformation().PhysicalMonitors)
+        foreach (var monitor in this.screenQuery.GetScreenInformation().PhysicalMonitors)
         {
             this.displayDataChannelService.TurnOnMonitor(monitor);
         }
-    }
-
-    /// <summary>
-    /// Returns the coordinates of the mouse cursor.
-    /// </summary>
-    /// <returns>Coordinates of the mouse cursor.</returns>
-    private static Point GetCurrentMouseCursorPosition()
-    {
-        return new MouseQuery().GetCurrentMouseCursorPosition();
     }
 
     private static bool IsBlacklisted(
@@ -244,15 +253,5 @@ public class ApplicationService
     )
     {
         return blacklist.DisplayMonitors.Any(monitorEntry => monitorEntry.IsMatch(displayMonitor));
-    }
-
-    private static ScreenInformation GetScreenInformation()
-    {
-        return new ScreenQuery().GetScreenInformation();
-    }
-
-    private static IEnumerable<WindowProcessInformation> GetWindows()
-    {
-        return new WindowQuery().GetWindows();
     }
 }

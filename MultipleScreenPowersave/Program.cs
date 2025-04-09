@@ -18,7 +18,12 @@ public static class Program
         SetupSerilog();
 
         var sleepTimeMs = 1000;
-        var applicationService = new ApplicationService();
+        var applicationService = new ApplicationService(
+            new App.WindowsImpl.DisplayDataChannelService(),
+            new Query.WindowsImpl.MouseQuery(),
+            new Query.WindowsImpl.ScreenQuery(),
+            new Query.WindowsImpl.WindowQuery()
+        );
         var stop = false;
 
         // catch SIGTERM
