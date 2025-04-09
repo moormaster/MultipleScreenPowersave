@@ -2,15 +2,13 @@
 
 using CommunityToolkit.Diagnostics;
 using Microsoft.Maui.Graphics;
+using MultipleScreenPowersave.App.WindowsImpl;
 using MultipleScreenPowersave.Configuration;
 using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query.WindowsImpl;
-using MultipleScreenPowersave.VCP;
 using Serilog;
-using Windows.Win32;
-using Windows.Win32.Foundation;
 
 /// <summary>
 /// ApplicationService providing functions to turn off Monitors based on activity.
@@ -18,6 +16,8 @@ using Windows.Win32.Foundation;
 public class ApplicationService
 {
     private const int MainWindowHandleCacheLifetimeMs = 60000;
+
+    private readonly IDisplayDataChannelService displayDataChannelService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
@@ -31,6 +31,8 @@ public class ApplicationService
 
         var screenInformation = GetScreenInformation();
         Log.Logger.Debug("{screenInformation}", screenInformation);
+
+        this.displayDataChannelService = new DisplayDataChannelService();
     }
 
     /// <summary>
@@ -181,7 +183,7 @@ public class ApplicationService
                         physicalMonitor.Handle
                     );
 
-                    TurnOnMonitor(physicalMonitor);
+                    this.displayDataChannelService.TurnOnMonitor(physicalMonitor);
                 }
                 catch (Exception e)
                 {
@@ -197,7 +199,7 @@ public class ApplicationService
 
                 try
                 {
-                    TurnOffMonitor(physicalMonitor);
+                    this.displayDataChannelService.TurnOffMonitor(physicalMonitor);
                 }
                 catch (Exception e)
                 {
@@ -215,7 +217,7 @@ public class ApplicationService
     {
         foreach (var monitor in GetScreenInformation().PhysicalMonitors)
         {
-            TurnOnMonitor(monitor);
+            this.displayDataChannelService.TurnOnMonitor(monitor);
         }
     }
 
@@ -242,52 +244,6 @@ public class ApplicationService
     )
     {
         return blacklist.DisplayMonitors.Any(monitorEntry => monitorEntry.IsMatch(displayMonitor));
-    }
-
-    /// <summary>
-    /// Turn off given physical monitor.
-    /// </summary>
-    /// <param name="monitor">Handle to the physical monitor.</param>
-    /// <exception cref="InvalidOperationException">Failure to turn off monitor.</exception>
-    private static void TurnOffMonitor(PhysicalMonitorInformation monitor)
-    {
-        var hresult = PInvoke.SetVCPFeature(
-            (HANDLE)monitor.Handle.Value,
-            // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
-            FeatureConstants.PowerMode,
-            // https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L2635
-            PowerModeValueConstants.DpmsOff
-        );
-
-        if (hresult != 1)
-        {
-            throw new InvalidOperationException(
-                $"Failed to turn off monitor #{monitor.Handle.Value}: HRESULT={hresult.ToHexString()}"
-            );
-        }
-    }
-
-    /// <summary>
-    /// Turn on given physical monitor.
-    /// </summary>
-    /// <param name="monitor">Handle to the physical monitor.</param>
-    /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
-    private static void TurnOnMonitor(PhysicalMonitorInformation monitor)
-    {
-        var hresult = PInvoke.SetVCPFeature(
-            (HANDLE)monitor.Handle.Value,
-            // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
-            FeatureConstants.PowerMode,
-            // https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L2635
-            PowerModeValueConstants.DpmOn
-        );
-
-        if (hresult != 1)
-        {
-            throw new InvalidOperationException(
-                $"Failed to turn on monitor #{monitor.Handle.Value}: HRESULT={hresult.ToHexString()}"
-            );
-        }
     }
 
     private static ScreenInformation GetScreenInformation()
