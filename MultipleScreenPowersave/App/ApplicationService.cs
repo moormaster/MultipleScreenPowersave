@@ -1,6 +1,7 @@
 ﻿namespace MultipleScreenPowersave.App;
 
 using CommunityToolkit.Diagnostics;
+using Microsoft.Maui.Graphics;
 using MultipleScreenPowersave.Configuration;
 using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
@@ -93,6 +94,18 @@ public class ApplicationService
                         currentCursorPosition.X,
                         currentCursorPosition.Y
                     );
+
+                    if (IsIgnoreMouse(blacklist, currentCursorPosition))
+                    {
+                        Log.Logger.Debug(
+                            "Blacklisted mouse cursor position ({x}x{y})",
+                            currentCursorPosition.X,
+                            currentCursorPosition.Y
+                        );
+
+                        continue;
+                    }
+
                     isMonitorNeededByHandle[physicalMonitor.Handle] = true;
                 }
             }
@@ -253,5 +266,10 @@ public class ApplicationService
     )
     {
         return blacklist.DisplayMonitors.Any(monitorEntry => monitorEntry.IsMatch(displayMonitor));
+    }
+
+    private static bool IsIgnoreMouse(BlacklistConfiguration blacklist, Point position)
+    {
+        return blacklist.IgnoreMouseAtRectangles.Any(rect => rect.Contains(position));
     }
 }

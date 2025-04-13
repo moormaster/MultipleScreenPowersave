@@ -1,5 +1,6 @@
 ﻿namespace MultipleScreenPowersave.Query.WindowsImpl;
 
+using System.Drawing;
 using System.Runtime.InteropServices;
 using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
