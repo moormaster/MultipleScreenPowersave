@@ -136,8 +136,8 @@ public class ApplicationService
                 );
                 Log.Logger.Debug(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
-                    windowProcessInformation.DwStyle,
-                    windowProcessInformation.DwExStyle?.ToHexString(),
+                    windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
+                    windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null,
                     windowProcessInformation.Rectangle.X,
                     windowProcessInformation.Rectangle.Y,
                     windowProcessInformation.Rectangle.Width,
@@ -159,8 +159,8 @@ public class ApplicationService
                 );
                 Log.Logger.Error(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
-                    windowProcessInformation.DwStyle,
-                    windowProcessInformation.DwExStyle?.ToHexString(),
+                    windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
+                    windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null,
                     windowProcessInformation.Rectangle.X,
                     windowProcessInformation.Rectangle.Y,
                     windowProcessInformation.Rectangle.Width,
@@ -180,8 +180,8 @@ public class ApplicationService
                 );
                 Log.Logger.Debug(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
-                    windowProcessInformation.DwStyle,
-                    windowProcessInformation.DwExStyle?.ToHexString(),
+                    windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
+                    windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null,
                     windowProcessInformation.Rectangle.X,
                     windowProcessInformation.Rectangle.Y,
                     windowProcessInformation.Rectangle.Width,
