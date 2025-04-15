@@ -1,11 +1,32 @@
-using DataModels;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using DataModels;
 
-public static class Helpers {
+public static class Helpers
+{
     public static List<PhysicalMonitor> GetPhysicalMonitors()
     {
         var output = RunProcess("ddcutil", "detect --edid-read-size=128 --verbose");
+        var monitors = ParseDdcUtilOutput(output);
+
+        return monitors;
+    }
+
+    public static List<VirtualMonitor> GetVirtualMonitors()
+    {
+        var output = RunProcess("xrandr", "--verbose");
+        var monitors = ParseXrandrOutput(output);
+
+        return monitors;
+    }
+
+    public static string NormalizeHex(string? hex)
+    {
+        return hex?.Replace(" ", "").Replace("\n", "").Replace("\r", "").ToLower() ?? "";
+    }
+
+    public static List<PhysicalMonitor> ParseDdcUtilOutput(string output)
+    {
         var monitors = new List<PhysicalMonitor>();
 
         var lines = output.Split('\n');
@@ -36,7 +57,7 @@ public static class Helpers {
             // I2C bus line (parse bus number)
             if (trimmed.StartsWith("I2C bus:") && current != null)
             {
-                current.I2CBus = trimmed.Split(':')[1].Trim();
+                current.I2CBus = trimmed.Split(':')[1].Split("/dev/")[1].Trim();
             }
 
             // EDID block starts
@@ -82,14 +103,12 @@ public static class Helpers {
         return monitors;
     }
 
-    public static List<VirtualMonitor> GetVirtualMonitors()
-    {
-        var output = RunProcess("xrandr", "--verbose");
+    public static List<VirtualMonitor> ParseXrandrOutput(string output) {
         var monitors = new List<VirtualMonitor>();
 
         var lines = output.Split('\n');
         VirtualMonitor? current = null;
-        
+
         bool isCollectingEdid = false;
         string? edid = null;
         int edidMaxLength = 128; // Limit to 128 bytes for consistency with ddcutil
@@ -101,12 +120,10 @@ public static class Helpers {
             // New monitor section
             if (trimmed.EndsWith("connected") || trimmed.Contains(" connected "))
             {
-                if (current != null) monitors.Add(current);
+                if (current != null)
+                    monitors.Add(current);
                 var parts = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                current = new VirtualMonitor
-                {
-                    OutputName = parts[0]
-                };
+                current = new VirtualMonitor { OutputName = parts[0] };
                 edid = "";
                 isCollectingEdid = false;
 
@@ -154,7 +171,8 @@ public static class Helpers {
                 else
                 {
                     isCollectingEdid = false;
-                    if (current != null) current.EDID = NormalizeHex(edid);
+                    if (current != null)
+                        current.EDID = NormalizeHex(edid);
                 }
             }
         }
@@ -170,11 +188,6 @@ public static class Helpers {
         return monitors;
     }
 
-    public static string NormalizeHex(string? hex)
-    {
-        return hex?.Replace(" ", "").Replace("\n", "").Replace("\r", "").ToLower() ?? "";
-    }
-
     public static string RunProcess(string command, string args)
     {
         var psi = new ProcessStartInfo
@@ -184,7 +197,7 @@ public static class Helpers {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
         };
 
         using var proc = Process.Start(psi);
