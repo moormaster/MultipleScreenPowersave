@@ -50,4 +50,11 @@ app.MapGet("/monitors", () =>
     return Results.Json(physicalMonitors);
 });
 
+app.MapGet("/windows", () =>
+{
+    var windows = Helpers.GetWindows();
+
+    return Results.Json(windows);
+});
+
 app.Run();

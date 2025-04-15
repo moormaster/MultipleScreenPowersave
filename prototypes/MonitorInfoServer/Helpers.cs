@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using DataModels;
+using Microsoft.Maui.Graphics;
 
 public static class Helpers
 {
@@ -32,6 +33,24 @@ public static class Helpers
         var monitors = ParseXrandrOutput(output);
 
         return monitors;
+    }
+
+    public static List<WindowProcessInformation> GetWindows()
+    {
+        var output = RunProcess("xwininfo", "-root -children -int");
+        var windows = ParseXWinInfoChildrenOutput(output);
+
+        foreach (var window in windows)
+        {
+            output = RunProcess("xwininfo", $"-id {window.Handle} -stats -wm");
+            var tuple = ParseXWinInfoOutput(output);
+
+            window.X11MapState = tuple.MapState;
+            window.X11WindowStates = tuple.WindowStates;
+            window.X11WindowType = tuple.WindowType;
+        }
+
+        return windows;
     }
 
     public static string NormalizeHex(string? hex)
@@ -142,7 +161,8 @@ public static class Helpers
         return monitors;
     }
 
-    public static List<VirtualMonitor> ParseXrandrOutput(string output) {
+    public static List<VirtualMonitor> ParseXrandrOutput(string output)
+    {
         var monitors = new List<VirtualMonitor>();
 
         var lines = output.Split('\n');
@@ -225,6 +245,87 @@ public static class Helpers
         }
 
         return monitors;
+    }
+
+    public static List<WindowProcessInformation> ParseXWinInfoChildrenOutput(string output)
+    {
+        var windows = new List<WindowProcessInformation>();
+        var lines = output.Split('\n');
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+
+            var pattern =
+                @"(?<handle>\d+) (?<title><\(has no name\)|"".*""): \((?<res_name>\(none\)|"".*"") (?<res_class>\(none\)|"".*"")\)\s+(?<width>\d+)x(?<height>\d+)\+(?<x>[-]?\d+)\+(?<y>[-]?\d+)";
+            if (!Regex.IsMatch(trimmed, pattern))
+                continue;
+
+            var match = Regex.Match(trimmed, pattern);
+            if (!match.Success)
+                continue;
+
+            windows.Add(
+                new WindowProcessInformation()
+                {
+                    Handle = int.Parse(match.Groups["handle"].Value),
+                    ProcessName = match.Groups["res_name"].Value,
+                    WindowTitle = match.Groups["title"].Value,
+                    Rectangle = new Rect(
+                        x: int.Parse(match.Groups["x"].Value),
+                        y: int.Parse(match.Groups["y"].Value),
+                        width: int.Parse(match.Groups["width"].Value),
+                        height: int.Parse(match.Groups["height"].Value)
+                    ),
+                }
+            );
+        }
+
+        return windows;
+    }
+
+    public static (
+        string MapState,
+        List<string> WindowStates,
+        string WindowType
+    ) ParseXWinInfoOutput(string output)
+    {
+        string? mapState = null;
+        List<string> windowStates = [];
+        string? windowType = null;
+
+        var lines = output.Split('\n');
+
+        bool isParseWindowStates = false;
+        bool isParseWindowType = false;
+        foreach (var line in lines)
+        {
+            if (isParseWindowStates && !Regex.IsMatch(line, "^          "))
+                isParseWindowStates = false;
+
+            switch (isParseWindowStates, isParseWindowType)
+            {
+                case (false, false):
+                    if (Regex.IsMatch(line, "Map State: "))
+                        mapState = line.Split(": ")[1].Trim();
+                    if (Regex.IsMatch(line, "Window type:"))
+                        isParseWindowType = true;
+                    if (Regex.IsMatch(line, "Window state:"))
+                        isParseWindowStates = true;
+                    break;
+
+                case (_, true):
+                    windowType = line.Trim();
+                    isParseWindowType = false;
+                    break;
+
+                case (true, _):
+                    windowStates.Add(line.Trim());
+                    break;
+            }
+        }
+
+        return (mapState ?? "", windowStates, windowType ?? "");
     }
 
     public static string RunProcess(string command, string args)
