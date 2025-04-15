@@ -9,6 +9,20 @@ public static class Helpers
         var output = RunProcess("ddcutil", "detect --edid-read-size=128 --verbose");
         var monitors = ParseDdcUtilOutput(output);
 
+        output = RunProcess(
+            "sh",
+            "-c \"for dev in \"/sys/class/backlight/*/device/ddc/i2c-dev/*\"; do echo $dev; done\""
+        );
+        var backlightDeviceByI2cDevice = ParseBacklightDeviceOutput(output);
+
+        foreach (var (i2cDevice, monitor) in monitors.ToDictionary(keySelector: it => it.I2CBus))
+        {
+            if (!backlightDeviceByI2cDevice.TryGetValue(i2cDevice, out var backlightDevice))
+                continue;
+
+            monitor.BacklightDevice = backlightDevice;
+        }
+
         return monitors;
     }
 
@@ -23,6 +37,31 @@ public static class Helpers
     public static string NormalizeHex(string? hex)
     {
         return hex?.Replace(" ", "").Replace("\n", "").Replace("\r", "").ToLower() ?? "";
+    }
+
+    public static IDictionary<string, string> ParseBacklightDeviceOutput(string output)
+    {
+        var lines = output.Split('\n');
+        var backlightDeviceByI2cDevice = new Dictionary<string, string>();
+
+        foreach (var line in lines)
+        {
+            var trimmed = line.Trim();
+
+            var match = Regex.Match(
+                trimmed,
+                @"^\/sys\/class\/backlight\/(?<backlightDevice>[\w-]+)\/device\/ddc\/i2c-dev\/(?<i2cDevice>[\w-]+)"
+            );
+            if (match.Success)
+            {
+                backlightDeviceByI2cDevice.Add(
+                    match.Groups["i2cDevice"].Value,
+                    match.Groups["backlightDevice"].Value
+                );
+            }
+        }
+
+        return backlightDeviceByI2cDevice;
     }
 
     public static List<PhysicalMonitor> ParseDdcUtilOutput(string output)
