@@ -66,7 +66,7 @@ public class ApplicationService
 
         Dictionary<PhysicalMonitorHandle, bool> isMonitorNeededByHandle =
             screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
-        BlacklistConfiguration blacklist = ConfigurationQueryFactory
+        BlacklistOptions blacklist = ConfigurationQueryFactory
             .GetConfigurationQuery()
             .GetBlacklist();
 
@@ -253,7 +253,7 @@ public class ApplicationService
     }
 
     private static bool IsBlacklisted(
-        BlacklistConfiguration blacklist,
+        BlacklistOptions blacklist,
         WindowProcessInformation windowProcessInformation
     )
     {
@@ -261,14 +261,14 @@ public class ApplicationService
     }
 
     private static bool IsBlacklisted(
-        BlacklistConfiguration blacklist,
+        BlacklistOptions blacklist,
         DisplayMonitorInformation displayMonitor
     )
     {
         return blacklist.DisplayMonitors.Any(monitorEntry => monitorEntry.IsMatch(displayMonitor));
     }
 
-    private static bool IsIgnoreMouse(BlacklistConfiguration blacklist, Point position)
+    private static bool IsIgnoreMouse(BlacklistOptions blacklist, Point position)
     {
         return blacklist.IgnoreMouseAtRectangles.Any(rect => rect.Contains(position));
     }

@@ -6,21 +6,21 @@ using Microsoft.Maui.Graphics;
 /// <summary>
 /// Serializable class representing the configuration for blacklisted monitors or windows.
 /// </summary>
-public class BlacklistConfiguration
+public class BlacklistOptions
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="BlacklistConfiguration"/> class.
+    /// Initializes a new instance of the <see cref="BlacklistOptions"/> class.
     /// </summary>
-    public BlacklistConfiguration() { }
+    public BlacklistOptions() { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="BlacklistConfiguration"/> class.
+    /// Initializes a new instance of the <see cref="BlacklistOptions"/> class.
     /// </summary>
     /// <param name="ignoreMouseAtRectangles">list of <see cref="Rect"/>'s to ignore mouse cursor when its located in it.</param>
     /// <param name="displayMonitors">list of monitors to be blacklisted.</param>
     /// <param name="windows">list of windows to be blacklisted.</param>
     [JsonConstructor]
-    public BlacklistConfiguration(
+    public BlacklistOptions(
         IList<Rect> ignoreMouseAtRectangles,
         IList<DisplayMonitorBlacklistEntry> displayMonitors,
         IList<ProcessBlacklistEntry> windows

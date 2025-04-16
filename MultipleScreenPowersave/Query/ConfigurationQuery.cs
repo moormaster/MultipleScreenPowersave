@@ -13,14 +13,14 @@ public class ConfigurationQuery(string file)
     /// Returns the BlacklistConfiguration read from the configuration file.
     /// </summary>
     /// <returns>The BlacklistConfiguration.</returns>
-    public BlacklistConfiguration GetBlacklist()
+    public BlacklistOptions GetBlacklist()
     {
         JsonDocument jsonConfiguration = JsonDocument.Parse(File.ReadAllText(file));
 
         var blacklist = jsonConfiguration.RootElement.GetProperty("blacklist");
-        return JsonSerializer.Deserialize<BlacklistConfiguration>(
+        return JsonSerializer.Deserialize<BlacklistOptions>(
                 blacklist,
                 Serialization.GetJsonSerializerOptions()
-            ) ?? new BlacklistConfiguration();
+            ) ?? new BlacklistOptions();
     }
 }

@@ -1,5 +1,6 @@
 ﻿namespace MultipleScreenPowersave.Configuration;
 
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using MultipleScreenPowersave.Model;
 
@@ -31,11 +32,13 @@ public record class ProcessBlacklistEntry
     /// <summary>
     /// Gets the regular expression that matches the process to be blacklisted.
     /// </summary>
+    [JsonConverter(typeof(RegexJsonConverter))]
     public Regex? ProcessName { get; }
 
     /// <summary>
     /// Gets the regular expression that matches the window title to be blacklisted.
     /// </summary>
+    [JsonConverter(typeof(RegexJsonConverter))]
     public Regex? WindowTitle { get; }
 
     /// <summary>

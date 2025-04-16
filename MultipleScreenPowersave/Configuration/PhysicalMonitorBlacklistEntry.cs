@@ -1,5 +1,6 @@
 ﻿namespace MultipleScreenPowersave.Configuration;
 
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using MultipleScreenPowersave.Model;
 
@@ -29,6 +30,7 @@ public class PhysicalMonitorBlacklistEntry
     /// <summary>
     /// Gets the regular expression that should match to the physical monitors description to be blacklisted.
     /// </summary>
+    [JsonConverter(typeof(RegexJsonConverter))]
     public Regex? Description { get; }
 
     /// <summary>
