@@ -31,6 +31,17 @@ public class DisplayMonitorInformation(
     public bool IsPrimary { get; } = isPrimary;
 
     /// <summary>
+    /// Gets or sets the name of the Xorg X11 output.
+    /// </summary>
+    public string? X11OutputName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the hexadecimal string representing first 128 byte of
+    /// <see href="https://de.wikipedia.org/wiki/Extended_Display_Identification_Data">EDID</see> data.
+    /// </summary>
+    public string? LinuxEdidHex { get; set; }
+
+    /// <summary>
     /// Gets the MonitorRectangle (position and dimension) of the DisplayMonitor.
     /// </summary>
     public Rect MonitorRectangle { get; } = monitorRectangle;

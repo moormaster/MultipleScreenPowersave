@@ -33,6 +33,7 @@ public class WindowProcessInformation
         this.ProcessName = processName;
         this.WindowTitle = windowTitle;
         this.Rectangle = rectangle;
+        this.X11WindowStates = [];
     }
 
     /// <summary>
@@ -66,6 +67,21 @@ public class WindowProcessInformation
     /// Gets the rectangle describing the position and size of the window.
     /// </summary>
     public Rect Rectangle { get; }
+
+    /// <summary>
+    /// Gets or sets the Xorg X11 map state of the window.
+    /// </summary>
+    public string? X11MapState { get; set; }
+
+    /// <summary>
+    /// Gets the list of Xorg X11 window states.
+    /// </summary>
+    public List<string> X11WindowStates { get; }
+
+    /// <summary>
+    /// Gets or sets the Xorg X11 window type.
+    /// </summary>}
+    public string? X11WindowType { get; set; }
 
     /// <inheritdoc/>
     public override string? ToString()

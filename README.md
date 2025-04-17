@@ -8,6 +8,10 @@ Monitors are considered USED when at least one of the conditions is met
 Requirements:
 - Monitors supporting to be switched on and of via [DDC/CI](https://en.wikipedia.org/wiki/Display_Data_Channel#DDC/CI)
 - Windows operating system
+- Linux:
+    - ddcutil
+	- light
+	- xdotool
 
 ## Configuration file appsettings.json
 

@@ -34,6 +34,9 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
     <ProjectReference Include="..\MultipleScreenPowersave.Win32\MultipleScreenPowersave.Win32.csproj" />
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <ProjectReference Include="..\MultipleScreenPowersave.Linux\MultipleScreenPowersave.Linux.csproj" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Update="AvaloniaApp.axaml.cs">
       <DependentUpon>AvaloniaApp.axaml</DependentUpon>

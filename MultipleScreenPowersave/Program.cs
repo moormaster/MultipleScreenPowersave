@@ -34,6 +34,8 @@ public static class Program
             .Services.AddMultipleScreenPowerSaveBackgroundService()
 #if WINDOWS
             .AddMultipleScreenPowerSaveWindowsPlatformServices()
+#else
+            .AddMultipleScreenPowerSaveLinuxPlatformServices()
 #endif
             .AddSerilog(
                 (services, configuration) =>

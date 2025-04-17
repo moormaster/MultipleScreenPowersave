@@ -118,6 +118,24 @@ public class DisplayControlServiceFacade(
                 return true;
         }
 
+        if (!string.IsNullOrEmpty(physicalMonitorInformation1.LinuxBacklightDevice))
+        {
+            if (
+                physicalMonitorInformation1.LinuxBacklightDevice
+                == physicalMonitorInformation2?.LinuxBacklightDevice
+            )
+                return true;
+        }
+
+        if (!string.IsNullOrEmpty(physicalMonitorInformation1.LinuxI2cDevice))
+        {
+            if (
+                physicalMonitorInformation1.LinuxI2cDevice
+                == physicalMonitorInformation2?.LinuxI2cDevice
+            )
+                return true;
+        }
+
         if (!string.IsNullOrEmpty(physicalMonitorInformation1.WmiInstanceName))
         {
             if (

@@ -5,14 +5,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Maui.Graphics;
 using MultipleScreenPowersave.Configuration;
+using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
 using MultipleScreenPowersave.Ui;
-#if WINDOWS
-using MultipleScreenPowersave.Extensions;
-#endif
-
 
 /// <summary>
 /// ApplicationService providing functions to turn off Monitors based on activity.
@@ -131,15 +128,22 @@ public class ApplicationService : IApplicationService
                     windowProcessInformation.WindowTitle,
                     windowProcessInformation.Handle
                 );
-                this.logger.LogDebug(
-                    "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
 #if WINDOWS
+                this.logger.LogDebug(
+                    "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}",
                     windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
-                    windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null,
+                    windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null
+                );
 #else
-                    null,
-                    null,
+                this.logger.LogDebug(
+                    "\tx11MapState: {x11MapState}, x11WindowStates: {x11WindowStates}, x11WindowType: {x11WindowType}",
+                    windowProcessInformation.X11MapState ?? null,
+                    windowProcessInformation.X11WindowStates,
+                    windowProcessInformation.X11WindowType ?? null
+                );
 #endif
+                this.logger.LogDebug(
+                    "\tPos: ({x}, {y}), Size: {width}x{height}",
                     windowProcessInformation.Rectangle.X,
                     windowProcessInformation.Rectangle.Y,
                     windowProcessInformation.Rectangle.Width,
@@ -162,15 +166,22 @@ public class ApplicationService : IApplicationService
                     windowProcessInformation.WindowTitle,
                     windowProcessInformation.Handle
                 );
-                this.logger.LogError(
-                    "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
 #if WINDOWS
+                this.logger.LogDebug(
+                    "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}",
                     windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
-                    windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null,
+                    windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null
+                );
 #else
-                    null,
-                    null,
+                this.logger.LogDebug(
+                    "\tx11MapState: {x11MapState}, x11WindowStates: {x11WindowStates}, x11WindowType: {x11WindowType}",
+                    windowProcessInformation.X11MapState ?? null,
+                    windowProcessInformation.X11WindowStates,
+                    windowProcessInformation.X11WindowType ?? null
+                );
 #endif
+                this.logger.LogDebug(
+                    "\tPos: ({x}, {y}), Size: {width}x{height}",
                     windowProcessInformation.Rectangle.X,
                     windowProcessInformation.Rectangle.Y,
                     windowProcessInformation.Rectangle.Width,
@@ -188,15 +199,22 @@ public class ApplicationService : IApplicationService
                     windowProcessInformation.WindowTitle,
                     windowProcessInformation.Handle
                 );
-                this.logger.LogDebug(
-                    "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
 #if WINDOWS
+                this.logger.LogDebug(
+                    "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}",
                     windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
-                    windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null,
+                    windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null
+                );
 #else
-                    null,
-                    null,
+                this.logger.LogDebug(
+                    "\tx11MapState: {x11MapState}, x11WindowStates: {x11WindowStates}, x11WindowType: {x11WindowType}",
+                    windowProcessInformation.X11MapState ?? null,
+                    windowProcessInformation.X11WindowStates,
+                    windowProcessInformation.X11WindowType ?? null
+                );
 #endif
+                this.logger.LogDebug(
+                    "\tPos: ({x}, {y}), Size: {width}x{height}",
                     windowProcessInformation.Rectangle.X,
                     windowProcessInformation.Rectangle.Y,
                     windowProcessInformation.Rectangle.Width,

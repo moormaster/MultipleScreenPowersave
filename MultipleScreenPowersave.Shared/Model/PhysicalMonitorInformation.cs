@@ -38,6 +38,16 @@ public class PhysicalMonitorInformation(PhysicalMonitorHandle handle, uint index
     public string? EdidHex { get; set; }
 
     /// <summary>
+    /// Gets or sets the I2cBus linux device.
+    /// </summary>
+    public string? LinuxI2cDevice { get; set; }
+
+    /// <summary>
+    /// Gets or sets the backlight control linux device.
+    /// </summary>
+    public string? LinuxBacklightDevice { get; set; }
+
+    /// <summary>
     /// Gets or sets the windows-only WMI instance name.
     /// </summary>
     public string? WmiInstanceName { get; set; }
@@ -52,6 +62,8 @@ public class PhysicalMonitorInformation(PhysicalMonitorHandle handle, uint index
         sb.AppendLine($"\tDescription: {this.Description},");
         sb.AppendLine($"\tDeviceId: {this.DeviceId},");
         sb.AppendLine($"\tEdidHex: {this.EdidHex}");
+        sb.AppendLine($"\tLinuxI2cDevice: {this.LinuxI2cDevice}");
+        sb.AppendLine($"\tLinuxBacklightDevice: {this.LinuxBacklightDevice}");
         sb.AppendLine($"\tWmiInstanceName: {this.WmiInstanceName}");
 
         sb.AppendLine("}");
