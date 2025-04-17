@@ -4,7 +4,6 @@ using System.Text;
 using CommunityToolkit.Diagnostics;
 using Microsoft.Maui.Graphics;
 using MultipleScreenPowersave.Model.Handles;
-using Windows.Win32;
 
 /// <summary>
 /// Dto containing process information belonging to a certain window.
@@ -14,7 +13,7 @@ public class WindowProcessInformation
     /// <summary>
     /// Initializes a new instance of the <see cref="WindowProcessInformation"/> class.
     /// </summary>
-    /// <param name="handle">WindowHandle as returned by <see cref="PInvoke.EnumWindows(Windows.Win32.UI.WindowsAndMessaging.WNDENUMPROC, Windows.Win32.Foundation.LPARAM)"/>.</param>
+    /// <param name="handle">WindowHandle.</param>
     /// <param name="processName">Name of the process belonging to the window.</param>
     /// <param name="windowTitle">Title of the window.</param>
     /// <param name="dwStyle">Gets the Windows-only <see href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-windowinfo#members">window styles</see>
@@ -47,7 +46,7 @@ public class WindowProcessInformation
     }
 
     /// <summary>
-    /// Gets the WindowHandle as returned by <see cref="PInvoke.EnumWindows(Windows.Win32.UI.WindowsAndMessaging.WNDENUMPROC, Windows.Win32.Foundation.LPARAM)"/>.
+    /// Gets the WindowHandle.
     /// </summary>
     public WindowHandle Handle { get; }
 

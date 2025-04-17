@@ -26,21 +26,4 @@ public static class ServiceCollectionExtensions
 
         services.AddHostedService<HostedBackgroundService>();
     }
-
-    /// <summary>
-    /// Configure platform specific services and options for MultipleScreenpowersave application.
-    /// </summary>
-    /// <param name="services">Servicecollection.</param>
-    public static void AddMultipleScreenPowerSaveWindowsPlatformServices(
-        this IServiceCollection services
-    )
-    {
-        services.AddTransient(
-            typeof(IDisplayDataChannelService),
-            typeof(App.WindowsImpl.DisplayDataChannelService)
-        );
-        services.AddTransient(typeof(IMouseQuery), typeof(Query.WindowsImpl.MouseQuery));
-        services.AddTransient(typeof(IScreenQuery), typeof(Query.WindowsImpl.ScreenQuery));
-        services.AddTransient(typeof(IWindowQuery), typeof(Query.WindowsImpl.WindowQuery));
-    }
 }

@@ -3,7 +3,6 @@
 using MultipleScreenPowersave.App;
 using MultipleScreenPowersave.Extensions;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 
 /// <summary>
 /// Win32 implementation of <see cref="IMouseQuery"/>.

@@ -3,17 +3,13 @@
 using System.Text;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
-using Windows.Win32;
-using Windows.Win32.Devices.Display;
-using Windows.Win32.Foundation;
-using Windows.Win32.Graphics.Gdi;
 
 /// <summary>
 /// Dto returned by <see cref="IScreenQuery.GetScreenInformation"/>.
 /// </summary>
-/// <param name="handle">PhysicalMonitorHandle as set by <see cref="PInvoke.GetPhysicalMonitorsFromHMONITOR(HMONITOR, Span{PHYSICAL_MONITOR})"/>.</param>
-/// <param name="displayMonitor">DisplayMonitorHandle as set by the lpfnEnum callback of <see cref="PInvoke.EnumDisplayMonitors(HDC, RECT?, MONITORENUMPROC, LPARAM)"/>.</param>
-/// <param name="description">Text description of the physical monitor as set by <see cref="PInvoke.GetPhysicalMonitorsFromHMONITOR(HMONITOR, Span{PHYSICAL_MONITOR})"/>.</param>
+/// <param name="handle">PhysicalMonitorHandle.</param>
+/// <param name="displayMonitor">DisplayMonitorHandle.</param>
+/// <param name="description">Text description of the physical monitor.</param>
 public class PhysicalMonitorInformation(
     PhysicalMonitorHandle handle,
     DisplayMonitorHandle displayMonitor,
@@ -21,17 +17,17 @@ public class PhysicalMonitorInformation(
 )
 {
     /// <summary>
-    /// Gets the PhysicalMonitorHandle as set by <see cref="PInvoke.GetPhysicalMonitorsFromHMONITOR(HMONITOR, Span{PHYSICAL_MONITOR})"/>.
+    /// Gets the PhysicalMonitorHandle.
     /// </summary>
     public PhysicalMonitorHandle Handle { get; } = handle;
 
     /// <summary>
-    /// Gets the text description of the physical monitor as set by <see cref="PInvoke.GetPhysicalMonitorsFromHMONITOR(HMONITOR, Span{PHYSICAL_MONITOR})"/>.
+    /// Gets the text description of the physical monitor.
     /// </summary>
     public string Description { get; } = description;
 
     /// <summary>
-    /// Gets the DisplayMonitorHandle as set by the lpfnEnum callback of <see cref="PInvoke.EnumDisplayMonitors(HDC, RECT?, MONITORENUMPROC, LPARAM)"/>.
+    /// Gets the DisplayMonitorHandle.
     /// </summary>
     public DisplayMonitorHandle DisplayMonitor { get; } = displayMonitor;
 

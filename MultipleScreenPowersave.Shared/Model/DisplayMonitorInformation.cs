@@ -4,9 +4,6 @@ using System.Text;
 using Microsoft.Maui.Graphics;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.Graphics.Gdi;
 
 /// <summary>
 /// Dto returned by <see cref="IScreenQuery.GetScreenInformation"/>.
@@ -18,7 +15,7 @@ public class DisplayMonitorInformation
     /// <summary>
     /// Initializes a new instance of the <see cref="DisplayMonitorInformation"/> class.
     /// </summary>
-    /// <param name="handle">DisplayMonitorHandle as set by the lpfnEnum callback of <see cref="PInvoke.EnumDisplayMonitors(HDC, RECT?, MONITORENUMPROC, LPARAM)"/>.</param>
+    /// <param name="handle">DisplayMonitorHandle.</param>
     /// <param name="isPrimary">Value indicating whether the current DisplayMonitor is the primary one.</param>
     /// <param name="monitorRectangle">MonitorRectangle (position and dimension) of the DisplayMonitor.</param>
     /// <param name="physicalMonitors">Enumerable of all PhysicalMonitors belonging to this DisplayMonitor.</param>
@@ -37,7 +34,7 @@ public class DisplayMonitorInformation
     }
 
     /// <summary>
-    /// Gets the DisplayMonitor as set by the lpfnEnum callback of <see cref="PInvoke.EnumDisplayMonitors(HDC, RECT?, MONITORENUMPROC, LPARAM)"/>.
+    /// Gets the DisplayMonitor.
     /// </summary>
     public DisplayMonitorHandle Handle { get; }
 
