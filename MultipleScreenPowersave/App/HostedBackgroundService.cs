@@ -1,0 +1,40 @@
+﻿namespace MultipleScreenPowersave.App;
+
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+
+/// <summary>
+/// Long running hosted service periodically calling the <see cref="ApplicationService"/>.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="HostedBackgroundService"/> class.
+/// </remarks>
+/// <param name="applicationService">ApplicationService instance.</param>
+/// <param name="options">HostedBackgroundService options.</param>
+public class HostedBackgroundService(
+    IApplicationService applicationService,
+    IOptions<HostedBackgroundServiceOptions> options
+) : BackgroundService, IHostedBackgroundService
+{
+    /// <inheritdoc/>
+    public override Task StopAsync(CancellationToken cancellationToken)
+    {
+        applicationService.TurnOnAllMonitors();
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            applicationService.TurnOnOnlyUsedMonitors();
+            Thread.Sleep(options.Value.SleepTimeMs);
+        }
+
+        applicationService.TurnOnAllMonitors();
+
+        return Task.CompletedTask;
+    }
+}

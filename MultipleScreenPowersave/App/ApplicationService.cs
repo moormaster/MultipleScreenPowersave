@@ -12,7 +12,7 @@ using Serilog;
 /// <summary>
 /// ApplicationService providing functions to turn off Monitors based on activity.
 /// </summary>
-public class ApplicationService
+public class ApplicationService : IApplicationService
 {
     private const int MainWindowHandleCacheLifetimeMs = 60000;
 
@@ -54,12 +54,7 @@ public class ApplicationService
         Log.Logger.Debug("{screenInformation}", screenInformation);
     }
 
-    /// <summary>
-    /// Turns on physical monitors that currently
-    ///     - show at least one window,
-    ///     - show the mouse cursor.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
+    /// <inheritdoc/>
     public void TurnOnOnlyUsedMonitors()
     {
         ScreenInformation screenInformation = this.screenQuery.GetScreenInformation();
@@ -240,10 +235,7 @@ public class ApplicationService
         }
     }
 
-    /// <summary>
-    /// Turn on all physical monitors.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
+    /// <inheritdoc/>
     public void TurnOnAllMonitors()
     {
         foreach (var monitor in this.screenQuery.GetScreenInformation().PhysicalMonitors)
