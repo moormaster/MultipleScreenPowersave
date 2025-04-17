@@ -1,6 +1,5 @@
 ﻿namespace MultipleScreenPowersave.Configuration;
 
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using MultipleScreenPowersave.Model;
 
@@ -15,7 +14,7 @@ public record class ProcessBlacklistEntry
     /// <param name="processName">Regular expression that matches the process to be blacklisted.</param>
     /// <param name="windowTitle">Regular expression that matches the window title to be blacklisted.</param>
     /// <exception cref="ArgumentNullException">All arguments are null.</exception>
-    public ProcessBlacklistEntry(Regex? processName, Regex? windowTitle)
+    public ProcessBlacklistEntry(string? processName = null, string? windowTitle = null)
     {
         if (processName == null && windowTitle == null)
         {
@@ -30,16 +29,25 @@ public record class ProcessBlacklistEntry
     }
 
     /// <summary>
+    /// Gets the pattern for the regular expression that matches the process to be blacklisted.
+    /// </summary>
+    public string? ProcessName { get; }
+
+    /// <summary>
     /// Gets the regular expression that matches the process to be blacklisted.
     /// </summary>
-    [JsonConverter(typeof(RegexJsonConverter))]
-    public Regex? ProcessName { get; }
+    public Regex? ProcessNameRegex =>
+        this.ProcessName != null ? new Regex(this.ProcessName!) : null;
+
+    /// <summary>
+    /// Gets the the pattern for the regular expression that matches the window title to be blacklisted.
+    /// </summary>
+    public string? WindowTitle { get; }
 
     /// <summary>
     /// Gets the regular expression that matches the window title to be blacklisted.
     /// </summary>
-    [JsonConverter(typeof(RegexJsonConverter))]
-    public Regex? WindowTitle { get; }
+    public Regex? WindowTitleRegex => this.WindowTitle != null ? new Regex(this.WindowTitle) : null;
 
     /// <summary>
     /// Determines wether this entry matches to the given WindowProcessInformation.
@@ -48,15 +56,15 @@ public record class ProcessBlacklistEntry
     /// <returns>True iff processName and windowTitle regular expressions match to the given WindowProcessInformation.</returns>
     public bool IsMatch(WindowProcessInformation windowProcessInformation)
     {
-        if (this.ProcessName != null)
+        if (this.ProcessNameRegex != null)
         {
-            if (!this.ProcessName.IsMatch(windowProcessInformation.ProcessName))
+            if (!this.ProcessNameRegex.IsMatch(windowProcessInformation.ProcessName))
                 return false;
         }
 
-        if (this.WindowTitle != null)
+        if (this.WindowTitleRegex != null)
         {
-            if (!this.WindowTitle.IsMatch(windowProcessInformation.WindowTitle))
+            if (!this.WindowTitleRegex.IsMatch(windowProcessInformation.WindowTitle))
                 return false;
         }
 

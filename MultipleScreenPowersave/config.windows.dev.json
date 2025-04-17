@@ -1,8 +1,0 @@
-﻿{
-	"blacklist": {
-		"windows": [
-			{ "processName": "explorer", "windowTitle": "^(|Program Manager)$" },
-			{ "processName": "TextInputHost" }
-		]
-	}
-}

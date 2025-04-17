@@ -1,15 +1,12 @@
 {
   "profiles": {
     "MultipleScreenPowersave Windows": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "MULTIPLESCREENPOWERSAVE_CONFIGURATION_FILE": "$(ProjectDir)\\config.windows.json"
-      }
+      "commandName": "Project"
     },
     "MultipleScreenPowersave Windows Dev": {
       "commandName": "Project",
       "environmentVariables": {
-        "MULTIPLESCREENPOWERSAVE_CONFIGURATION_FILE": "$(ProjectDir)\\config.windows.dev.json"
+        "DOTNET_ENVIRONMENT": "Development"
       }
     },
     "MultipleScreenPowersave Windows Prod": {

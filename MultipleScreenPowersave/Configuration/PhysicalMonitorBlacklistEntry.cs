@@ -1,6 +1,5 @@
 ﻿namespace MultipleScreenPowersave.Configuration;
 
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using MultipleScreenPowersave.Model;
 
@@ -14,24 +13,20 @@ public class PhysicalMonitorBlacklistEntry
     /// </summary>
     /// <param name="description">Regular expression that should match to the physical monitors description to be blacklisted.</param>
     /// <exception cref="ArgumentNullException">All arguments were null.</exception>
-    public PhysicalMonitorBlacklistEntry(Regex? description)
+    public PhysicalMonitorBlacklistEntry(string? description)
     {
-        if (description == null)
-        {
-            throw new ArgumentNullException(
-                nameof(description),
-                "At least one property must be != null"
-            );
-        }
-
         this.Description = description;
     }
 
     /// <summary>
+    /// Gets the the pattern for the regular expression that should match to the physical monitors description to be blacklisted.
+    /// </summary>
+    public string? Description { get; }
+
+    /// <summary>
     /// Gets the regular expression that should match to the physical monitors description to be blacklisted.
     /// </summary>
-    [JsonConverter(typeof(RegexJsonConverter))]
-    public Regex? Description { get; }
+    public Regex? DescriptionRegex => this.Description != null ? new Regex(this.Description) : null;
 
     /// <summary>
     /// Determines whether the current entry matches to a DisplayMonitor.
@@ -40,10 +35,10 @@ public class PhysicalMonitorBlacklistEntry
     /// <returns>True iff the displayMonitor contains at least one physical monitor that should be blacklisted.</returns>
     public bool IsMatch(DisplayMonitorInformation displayMonitor)
     {
-        if (this.Description != null)
+        if (this.DescriptionRegex != null)
         {
             return displayMonitor.PhysicalMonitors.Any(physicalMonitor =>
-                this.Description.IsMatch(physicalMonitor.Description)
+                this.DescriptionRegex.IsMatch(physicalMonitor.Description)
             );
         }
 

@@ -1,6 +1,7 @@
 ﻿namespace MultipleScreenPowersave.App;
 
 using CommunityToolkit.Diagnostics;
+using Microsoft.Extensions.Options;
 using Microsoft.Maui.Graphics;
 using MultipleScreenPowersave.Configuration;
 using MultipleScreenPowersave.Extensions;
@@ -20,6 +21,7 @@ public class ApplicationService : IApplicationService
     private readonly IMouseQuery mouseQuery;
     private readonly IScreenQuery screenQuery;
     private readonly IWindowQuery windowQuery;
+    private readonly IOptions<BlacklistOptions> blacklistOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
@@ -28,27 +30,26 @@ public class ApplicationService : IApplicationService
     /// <param name="mouseQuery">MouseQuery instance.</param>
     /// <param name="screenQuery">ScreenQuery instance.</param>
     /// <param name="windowQuery">WindowQuery instance.</param>
+    /// <param name="blacklistOptions">Blacklist options.</param>
     public ApplicationService(
         IDisplayDataChannelService displayDataChannelService,
         IMouseQuery mouseQuery,
         IScreenQuery screenQuery,
-        IWindowQuery windowQuery
+        IWindowQuery windowQuery,
+        IOptions<BlacklistOptions> blacklistOptions
     )
     {
         Guard.IsNotNull(displayDataChannelService);
         Guard.IsNotNull(mouseQuery);
         Guard.IsNotNull(screenQuery);
         Guard.IsNotNull(windowQuery);
+        Guard.IsNotNull(blacklistOptions);
 
         this.displayDataChannelService = displayDataChannelService;
         this.mouseQuery = mouseQuery;
         this.screenQuery = screenQuery;
         this.windowQuery = windowQuery;
-
-        Log.Logger.Information(
-            "Using configuration file: {configurationFileName}",
-            ConfigurationQueryFactory.GetConfigurationFileName()
-        );
+        this.blacklistOptions = blacklistOptions;
 
         var screenInformation = this.screenQuery.GetScreenInformation();
         Log.Logger.Debug("{screenInformation}", screenInformation);
@@ -61,9 +62,7 @@ public class ApplicationService : IApplicationService
 
         Dictionary<PhysicalMonitorHandle, bool> isMonitorNeededByHandle =
             screenInformation.PhysicalMonitors.ToDictionary(v => v.Handle, v => false);
-        BlacklistOptions blacklist = ConfigurationQueryFactory
-            .GetConfigurationQuery()
-            .GetBlacklist();
+        BlacklistOptions blacklist = this.blacklistOptions.Value;
 
         foreach (var displayMonitor in screenInformation.DisplayMonitors)
         {
