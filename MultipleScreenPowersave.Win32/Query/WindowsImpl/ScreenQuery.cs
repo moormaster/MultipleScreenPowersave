@@ -72,9 +72,11 @@ public class ScreenQuery : IScreenQuery
                         isPrimary: (monitorInfo.dwFlags & PInvoke.MONITORINFOF_PRIMARY) != 0,
                         monitorInfo.rcMonitor.ToRect(),
                         physicalMonitors.Select(element => new PhysicalMonitorInformation(
-                            new PhysicalMonitorHandle((int)element.hPhysicalMonitor),
-                            element.szPhysicalMonitorDescription.ToString()
-                        ))
+                            new PhysicalMonitorHandle((int)element.hPhysicalMonitor)
+                        )
+                        {
+                            Description = element.szPhysicalMonitorDescription.ToString(),
+                        })
                     )
                 );
             }

@@ -8,8 +8,7 @@ using MultipleScreenPowersave.Query;
 /// Dto returned by <see cref="IScreenQuery.GetScreenInformation"/>.
 /// </summary>
 /// <param name="handle">PhysicalMonitorHandle.</param>
-/// <param name="description">Text description of the physical monitor.</param>
-public class PhysicalMonitorInformation(PhysicalMonitorHandle handle, string description)
+public class PhysicalMonitorInformation(PhysicalMonitorHandle handle)
 {
     /// <summary>
     /// Gets the PhysicalMonitorHandle.
@@ -17,9 +16,9 @@ public class PhysicalMonitorInformation(PhysicalMonitorHandle handle, string des
     public PhysicalMonitorHandle Handle { get; } = handle;
 
     /// <summary>
-    /// Gets the text description of the physical monitor.
+    /// Gets or sets the text description of the physical monitor.
     /// </summary>
-    public string Description { get; } = description;
+    public string Description { get; set; } = string.Empty;
 
     /// <inheritdoc/>
     public override string? ToString()
