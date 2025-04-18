@@ -79,10 +79,12 @@ public class WindowQuery : IWindowQuery
                     new WindowHandle((int)windowHandle),
                     process.ProcessName,
                     windowText,
-                    (uint)windowInfo.dwStyle,
-                    (uint)windowInfo.dwExStyle,
                     windowInfo.rcWindow.ToRect()
-                );
+                )
+                {
+                    DwStyle = (uint)windowInfo.dwStyle,
+                    DwExStyle = (uint)windowInfo.dwExStyle,
+                };
             }
 
             if (!IsWindowVisible(windowProcessInformation))

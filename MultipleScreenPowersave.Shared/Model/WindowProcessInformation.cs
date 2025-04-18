@@ -16,32 +16,22 @@ public class WindowProcessInformation
     /// <param name="handle">WindowHandle.</param>
     /// <param name="processName">Name of the process belonging to the window.</param>
     /// <param name="windowTitle">Title of the window.</param>
-    /// <param name="dwStyle">Gets the Windows-only <see href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-windowinfo#members">window styles</see>
-    /// of the window. For a table of window styles, see <see href="https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles">Window Styles</see>.</param>
-    /// <param name="dwExStyle">Windows-only <see href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-windowinfo#members">extended window styles</see>
-    /// of the window. For a table of extended window styles, see <see href="https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles">Extended Window Styles</see>.</param>
     /// <param name="rectangle">Rectangle describing the position and size of the window.</param>
     public WindowProcessInformation(
         WindowHandle handle,
         string processName,
         string windowTitle,
-        uint? dwStyle,
-        uint? dwExStyle,
         Rect rectangle
     )
     {
         Guard.IsFalse(handle == WindowHandle.Empty);
         Guard.IsNotNullOrWhiteSpace(processName);
         Guard.IsNotNull(windowTitle);
-        // dwStyle may be null
-        // dwExStyle may be null
         Guard.IsNotNull(rectangle);
 
         this.Handle = handle;
         this.ProcessName = processName;
         this.WindowTitle = windowTitle;
-        this.DwStyle = dwStyle;
-        this.DwExStyle = dwExStyle;
         this.Rectangle = rectangle;
     }
 
@@ -61,16 +51,16 @@ public class WindowProcessInformation
     public string WindowTitle { get; }
 
     /// <summary>
-    /// Gets the Windows-only <see href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-windowinfo#members">window styles</see>
+    /// Gets or sets the Windows-only <see href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-windowinfo#members">window styles</see>
     /// of the window. For a table of window styles, see <see href="https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles">Window Styles</see>.
     /// </summary>
-    public uint? DwStyle { get; }
+    public uint? DwStyle { get; set; }
 
     /// <summary>
-    /// Gets the Windows-only <see href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-windowinfo#members">extended window styles</see>
+    /// Gets or sets the Windows-only <see href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-windowinfo#members">extended window styles</see>
     /// of the window. For a table of extended window styles, see <see href="https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles">Extended Window Styles</see>.
     /// </summary>
-    public uint? DwExStyle { get; }
+    public uint? DwExStyle { get; set; }
 
     /// <summary>
     /// Gets the rectangle describing the position and size of the window.
