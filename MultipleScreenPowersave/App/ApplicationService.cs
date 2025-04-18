@@ -109,14 +109,9 @@ public class ApplicationService : IApplicationService
 
         foreach (var windowProcessInformation in windowsShown)
         {
-            var screenOfApp = System.Windows.Forms.Screen.FromHandle(
-                windowProcessInformation.Handle.Value
-            );
-
-            // hacky way to get the display monitor handle
-            var displayMonitorHandle = new DisplayMonitorHandle(screenOfApp.GetHashCode());
-            screenInformation.DisplayMonitorByHandle.TryGetValue(
-                displayMonitorHandle,
+            TryGetDisplayMonitorByRect(
+                screenInformation,
+                windowProcessInformation.Rectangle,
                 out var displayMonitor
             );
 
@@ -241,6 +236,26 @@ public class ApplicationService : IApplicationService
         {
             this.displayDataChannelService.TurnOnMonitor(monitor);
         }
+    }
+
+    private static bool TryGetDisplayMonitorByRect(
+        ScreenInformation screenInformation,
+        Rect rectangle,
+        out DisplayMonitorInformation displayMonitor
+    )
+    {
+        displayMonitor = screenInformation
+            .DisplayMonitors.Select(monitor =>
+                (
+                    IntersectionArea: monitor.MonitorRectangle.Intersect(rectangle).GetArea(),
+                    DisplayMonitor: monitor
+                )
+            )
+            .OrderByDescending(tuple => tuple.IntersectionArea)
+            .FirstOrDefault()
+            .DisplayMonitor;
+
+        return displayMonitor != null;
     }
 
     private static bool IsBlacklisted(
