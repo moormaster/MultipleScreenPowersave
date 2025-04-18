@@ -10,27 +10,23 @@ using MultipleScreenPowersave.Query;
 /// </summary>
 public class DisplayMonitorInformation
 {
-    private readonly List<PhysicalMonitorInformation> physicalMonitors = [];
-
     /// <summary>
     /// Initializes a new instance of the <see cref="DisplayMonitorInformation"/> class.
     /// </summary>
     /// <param name="handle">DisplayMonitorHandle.</param>
     /// <param name="isPrimary">Value indicating whether the current DisplayMonitor is the primary one.</param>
     /// <param name="monitorRectangle">MonitorRectangle (position and dimension) of the DisplayMonitor.</param>
-    /// <param name="physicalMonitors">Enumerable of all PhysicalMonitors belonging to this DisplayMonitor.</param>
     public DisplayMonitorInformation(
         DisplayMonitorHandle handle,
         bool isPrimary,
-        Rect monitorRectangle,
-        IEnumerable<PhysicalMonitorInformation> physicalMonitors
+        Rect monitorRectangle
     )
     {
         this.Handle = handle;
         this.IsPrimary = isPrimary;
         this.MonitorRectangle = monitorRectangle;
 
-        this.physicalMonitors.AddRange(physicalMonitors);
+        this.PhysicalMonitors = new List<PhysicalMonitorInformation>();
     }
 
     /// <summary>
@@ -49,12 +45,9 @@ public class DisplayMonitorInformation
     public Rect MonitorRectangle { get; }
 
     /// <summary>
-    /// Gets the enumerable of all PhysicalMonitors belonging to this DisplayMonitor.
+    /// Gets the List of all PhysicalMonitors belonging to this DisplayMonitor.
     /// </summary>
-    public IEnumerable<PhysicalMonitorInformation> PhysicalMonitors
-    {
-        get => this.physicalMonitors;
-    }
+    public List<PhysicalMonitorInformation> PhysicalMonitors { get; }
 
     /// <summary>
     /// Gets the size (dimensions) of the DisplayMonitor.
@@ -73,7 +66,7 @@ public class DisplayMonitorInformation
         sb.AppendLine();
         sb.AppendLine("\tPhysicalMonitors: [");
 
-        foreach (var monitor in this.physicalMonitors)
+        foreach (var monitor in this.PhysicalMonitors)
         {
             var monitorLines = monitor.ToString()?.Split('\n') ?? [];
             foreach (var line in monitorLines)

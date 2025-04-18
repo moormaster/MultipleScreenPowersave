@@ -66,19 +66,21 @@ public class ScreenQuery : IScreenQuery
                 // see https://learn.microsoft.com/en-us/windows/win32/api/physicalmonitorenumerationapi/nf-physicalmonitorenumerationapi-getphysicalmonitorsfromhmonitor
                 PInvoke.GetPhysicalMonitorsFromHMONITOR(hMonitor, physicalMonitors);
 
-                displayMonitors.Add(
-                    new DisplayMonitorInformation(
-                        new DisplayMonitorHandle((int)hMonitor),
-                        isPrimary: (monitorInfo.dwFlags & PInvoke.MONITORINFOF_PRIMARY) != 0,
-                        monitorInfo.rcMonitor.ToRect(),
-                        physicalMonitors.Select(element => new PhysicalMonitorInformation(
-                            new PhysicalMonitorHandle((int)element.hPhysicalMonitor)
-                        )
-                        {
-                            Description = element.szPhysicalMonitorDescription.ToString(),
-                        })
-                    )
+                var displayMonitor = new DisplayMonitorInformation(
+                    new DisplayMonitorHandle((int)hMonitor),
+                    isPrimary: (monitorInfo.dwFlags & PInvoke.MONITORINFOF_PRIMARY) != 0,
+                    monitorInfo.rcMonitor.ToRect()
                 );
+                displayMonitor.PhysicalMonitors.AddRange(
+                    physicalMonitors.Select(element => new PhysicalMonitorInformation(
+                        new PhysicalMonitorHandle((int)element.hPhysicalMonitor)
+                    )
+                    {
+                        Description = element.szPhysicalMonitorDescription.ToString(),
+                    })
+                );
+
+                displayMonitors.Add(displayMonitor);
             }
         }
 
