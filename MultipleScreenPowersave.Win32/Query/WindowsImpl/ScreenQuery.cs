@@ -73,7 +73,6 @@ public class ScreenQuery : IScreenQuery
                         monitorInfo.rcMonitor.ToRect(),
                         physicalMonitors.Select(element => new PhysicalMonitorInformation(
                             new PhysicalMonitorHandle((int)element.hPhysicalMonitor),
-                            new DisplayMonitorHandle((int)hMonitor),
                             element.szPhysicalMonitorDescription.ToString()
                         ))
                     )
