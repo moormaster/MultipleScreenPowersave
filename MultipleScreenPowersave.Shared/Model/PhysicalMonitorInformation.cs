@@ -20,6 +20,11 @@ public class PhysicalMonitorInformation(PhysicalMonitorHandle handle)
     /// </summary>
     public string Description { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the windows-only deviceId used to query windows-registry with.
+    /// </summary>
+    public string? DeviceId { get; set; }
+
     /// <inheritdoc/>
     public override string? ToString()
     {
@@ -28,6 +33,7 @@ public class PhysicalMonitorInformation(PhysicalMonitorHandle handle)
 
         sb.AppendLine($"\tHandle: {this.Handle},");
         sb.AppendLine($"\tDescription: {this.Description},");
+        sb.AppendLine($"\tDeviceId: {this.DeviceId},");
 
         sb.AppendLine("}");
         return sb.ToString();

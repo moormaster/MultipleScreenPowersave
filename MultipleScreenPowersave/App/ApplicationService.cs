@@ -124,8 +124,13 @@ public class ApplicationService : IApplicationService
                 );
                 Log.Logger.Debug(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
+#if WINDOWS
                     windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
                     windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null,
+#else
+                    null,
+                    null,
+#endif
                     windowProcessInformation.Rectangle.X,
                     windowProcessInformation.Rectangle.Y,
                     windowProcessInformation.Rectangle.Width,
@@ -147,8 +152,13 @@ public class ApplicationService : IApplicationService
                 );
                 Log.Logger.Error(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
+#if WINDOWS
                     windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
                     windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null,
+#else
+                    null,
+                    null,
+#endif
                     windowProcessInformation.Rectangle.X,
                     windowProcessInformation.Rectangle.Y,
                     windowProcessInformation.Rectangle.Width,
@@ -168,8 +178,13 @@ public class ApplicationService : IApplicationService
                 );
                 Log.Logger.Debug(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
+#if WINDOWS
                     windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
                     windowProcessInformation.DwExStyle?.ExtendedWindowStyleToString() ?? null,
+#else
+                    null,
+                    null,
+#endif
                     windowProcessInformation.Rectangle.X,
                     windowProcessInformation.Rectangle.Y,
                     windowProcessInformation.Rectangle.Width,
