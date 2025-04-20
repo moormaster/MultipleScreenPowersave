@@ -19,6 +19,10 @@ public static class ServiceCollectionExtensions
     )
     {
         services.AddTransient(
+            typeof(IDisplayBacklightService),
+            typeof(App.WindowsImpl.DisplayBacklightService)
+        );
+        services.AddTransient(
             typeof(IDisplayDataChannelService),
             typeof(App.WindowsImpl.DisplayDataChannelService)
         );

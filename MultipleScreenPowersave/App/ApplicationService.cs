@@ -16,8 +16,7 @@ using Serilog;
 public class ApplicationService : IApplicationService
 {
     private const int MainWindowHandleCacheLifetimeMs = 60000;
-
-    private readonly IDisplayDataChannelService displayDataChannelService;
+    private readonly IDisplayControlServiceFacade displayControlServiceFacade;
     private readonly IMouseQuery mouseQuery;
     private readonly IScreenQuery screenQuery;
     private readonly IWindowQuery windowQuery;
@@ -26,26 +25,26 @@ public class ApplicationService : IApplicationService
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
     /// </summary>
-    /// <param name="displayDataChannelService">DisplayDataChannelService instance.</param>
+    /// <param name="displayControlServiceFacade">DisplayControlServiceFacade instance.</param>
     /// <param name="mouseQuery">MouseQuery instance.</param>
     /// <param name="screenQuery">ScreenQuery instance.</param>
     /// <param name="windowQuery">WindowQuery instance.</param>
     /// <param name="blacklistOptions">Blacklist options.</param>
     public ApplicationService(
-        IDisplayDataChannelService displayDataChannelService,
+        IDisplayControlServiceFacade displayControlServiceFacade,
         IMouseQuery mouseQuery,
         IScreenQuery screenQuery,
         IWindowQuery windowQuery,
         IOptions<BlacklistOptions> blacklistOptions
     )
     {
-        Guard.IsNotNull(displayDataChannelService);
+        Guard.IsNotNull(displayControlServiceFacade);
         Guard.IsNotNull(mouseQuery);
         Guard.IsNotNull(screenQuery);
         Guard.IsNotNull(windowQuery);
         Guard.IsNotNull(blacklistOptions);
 
-        this.displayDataChannelService = displayDataChannelService;
+        this.displayControlServiceFacade = displayControlServiceFacade;
         this.mouseQuery = mouseQuery;
         this.screenQuery = screenQuery;
         this.windowQuery = windowQuery;
@@ -203,7 +202,7 @@ public class ApplicationService : IApplicationService
                         physicalMonitor.Handle
                     );
 
-                    this.displayDataChannelService.TurnOnMonitor(physicalMonitor);
+                    this.displayControlServiceFacade.TurnOnMonitor(physicalMonitor);
                 }
                 catch (Exception e)
                 {
@@ -219,7 +218,7 @@ public class ApplicationService : IApplicationService
 
                 try
                 {
-                    this.displayDataChannelService.TurnOffMonitor(physicalMonitor);
+                    this.displayControlServiceFacade.TurnOffMonitor(physicalMonitor);
                 }
                 catch (Exception e)
                 {
@@ -233,9 +232,7 @@ public class ApplicationService : IApplicationService
     public void TurnOnAllMonitors()
     {
         foreach (var monitor in this.screenQuery.GetScreenInformation().PhysicalMonitors)
-        {
-            this.displayDataChannelService.TurnOnMonitor(monitor);
-        }
+            this.displayControlServiceFacade.TurnOnMonitor(monitor);
     }
 
     private static bool TryGetDisplayMonitorByRect(

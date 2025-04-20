@@ -23,6 +23,10 @@ public static class ServiceCollectionExtensions
         services.AddOptions<BlacklistOptions>().BindConfiguration("blacklist");
 
         services.AddTransient(typeof(IApplicationService), typeof(ApplicationService));
+        services.AddTransient(
+            typeof(IDisplayControlServiceFacade),
+            typeof(DisplayControlServiceFacade)
+        );
 
         services.AddHostedService<HostedBackgroundService>();
     }
