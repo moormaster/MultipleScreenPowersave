@@ -1,6 +1,8 @@
 ﻿namespace MultipleScreenPowersave;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MultipleScreenPowersave.App;
 using MultipleScreenPowersave.Configuration;
 using Serilog;
 
@@ -21,6 +23,15 @@ public static class Program
         hostBuilder.Services.AddMultipleScreenPowerSaveWindowsPlatformServices();
 
         var host = hostBuilder.Build();
+
+        // catch SIGTERM
+        AppDomain.CurrentDomain.ProcessExit += (object? sender, EventArgs e) =>
+        {
+            var hostedBackgroundService = (HostedBackgroundService)
+                host.Services.GetService<IHostedService>()!;
+
+            hostedBackgroundService.StopAsync(cancellationToken: default);
+        };
 
         host.Run();
     }

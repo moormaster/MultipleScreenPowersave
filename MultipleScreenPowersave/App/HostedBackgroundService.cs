@@ -19,6 +19,8 @@ public class HostedBackgroundService(
     /// <inheritdoc/>
     public override Task StopAsync(CancellationToken cancellationToken)
     {
+        base.StopAsync(cancellationToken);
+
         applicationService.TurnOnAllMonitors();
 
         return Task.CompletedTask;
