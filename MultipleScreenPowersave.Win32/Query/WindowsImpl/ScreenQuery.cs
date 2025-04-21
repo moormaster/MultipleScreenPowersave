@@ -3,6 +3,8 @@
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using Microsoft.Win32;
 using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
@@ -115,6 +117,13 @@ public class ScreenQuery : IScreenQuery
                         .Value.DeviceID.ToString();
                 }
 
+                string? edidHex = null;
+                if (deviceId != null)
+                {
+                    var (monitorId, driverId) = this.ParseMonitorDriverId(deviceId);
+                    edidHex = this.GetMonitorEdidHexFromRegistry(monitorId, driverId);
+                }
+
                 displayMonitor.PhysicalMonitors.AddRange(
                     physicalMonitors.Select(element => new PhysicalMonitorInformation(
                         new PhysicalMonitorHandle((int)element.hPhysicalMonitor)
@@ -122,6 +131,7 @@ public class ScreenQuery : IScreenQuery
                     {
                         Description = element.szPhysicalMonitorDescription.ToString(),
                         DeviceId = deviceId,
+                        EdidHex = edidHex,
                     })
                 );
 
@@ -130,5 +140,34 @@ public class ScreenQuery : IScreenQuery
         }
 
         return new ScreenInformation(displayMonitors);
+    }
+
+    private string GetMonitorEdidHexFromRegistry(string monitorId, string driverId)
+    {
+        var key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+        key = key.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\Display\{monitorId}");
+
+        var instanceIds = key!.GetSubKeyNames();
+        foreach (var instanceIdCandidate in instanceIds)
+        {
+            var instanceKey = key.OpenSubKey(instanceIdCandidate);
+            if ((string?)instanceKey!.GetValue("Driver") != driverId)
+                continue;
+
+            var deviceParametersKey = instanceKey.OpenSubKey("Device Parameters");
+            var edidBytes = (byte[])deviceParametersKey!.GetValue("EDID")!;
+
+            return Convert.ToHexString(edidBytes);
+        }
+
+        throw new KeyNotFoundException(
+            $"Could not find registry key for monitor instance with monitorId=\"{monitorId}\" and driverId=\"{driverId}\"."
+        );
+    }
+
+    private (string MonitorId, string DriverId) ParseMonitorDriverId(string deviceId)
+    {
+        var match = Regex.Match(deviceId, @"MONITOR\\(?<monitorId>\w+)\\(?<driverId>.*)");
+        return (match.Groups["monitorId"].Value, match.Groups["driverId"].Value);
     }
 }

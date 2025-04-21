@@ -25,6 +25,12 @@ public class PhysicalMonitorInformation(PhysicalMonitorHandle handle)
     /// </summary>
     public string? DeviceId { get; set; }
 
+    /// <summary>
+    /// Gets or sets the hexadecimal string representing first 128 byte of
+    /// <see href="https://de.wikipedia.org/wiki/Extended_Display_Identification_Data">EDID</see> data.
+    /// </summary>
+    public string? EdidHex { get; set; }
+
     /// <inheritdoc/>
     public override string? ToString()
     {
@@ -34,6 +40,7 @@ public class PhysicalMonitorInformation(PhysicalMonitorHandle handle)
         sb.AppendLine($"\tHandle: {this.Handle},");
         sb.AppendLine($"\tDescription: {this.Description},");
         sb.AppendLine($"\tDeviceId: {this.DeviceId},");
+        sb.AppendLine($"\tEdidHex: {this.EdidHex}");
 
         sb.AppendLine("}");
         return sb.ToString();
