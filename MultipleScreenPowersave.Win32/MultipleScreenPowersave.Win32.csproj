@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\common.props"/>
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UseWindowsForms>True</UseWindowsForms>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <RootNamespace>MultipleScreenPowersave</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

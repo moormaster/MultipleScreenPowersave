@@ -1,0 +1,6 @@
+﻿<Project>
+  <PropertyGroup>
+	<RootNamespace>MultipleScreenPowersave</RootNamespace>
+    <TargetFramework>net8.0-windows</TargetFramework>
+  </PropertyGroup>
+</Project>
