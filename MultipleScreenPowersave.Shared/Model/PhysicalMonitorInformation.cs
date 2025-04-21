@@ -31,6 +31,11 @@ public class PhysicalMonitorInformation(PhysicalMonitorHandle handle)
     /// </summary>
     public string? EdidHex { get; set; }
 
+    /// <summary>
+    /// Gets or sets the windows-only WMI instance name.
+    /// </summary>
+    public string? WmiInstanceName { get; set; }
+
     /// <inheritdoc/>
     public override string? ToString()
     {
@@ -41,6 +46,7 @@ public class PhysicalMonitorInformation(PhysicalMonitorHandle handle)
         sb.AppendLine($"\tDescription: {this.Description},");
         sb.AppendLine($"\tDeviceId: {this.DeviceId},");
         sb.AppendLine($"\tEdidHex: {this.EdidHex}");
+        sb.AppendLine($"\tWmiInstanceName: {this.WmiInstanceName}");
 
         sb.AppendLine("}");
         return sb.ToString();

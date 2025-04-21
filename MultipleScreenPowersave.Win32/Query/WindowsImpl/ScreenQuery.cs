@@ -2,6 +2,7 @@
 
 using System.Drawing;
 using System.Linq;
+using System.Management;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
@@ -78,6 +79,9 @@ public class ScreenQuery : IScreenQuery
                 0
             );
 
+            // enumerate WMI instances
+            var wmiInstanceNameByEdidhex = GetWmiInstanceNameByEdidHex();
+
             foreach (var hMonitor in displayMonitorRectangles.Keys)
             {
                 MONITORINFOEXW monitorInfo = default;
@@ -120,8 +124,15 @@ public class ScreenQuery : IScreenQuery
                 string? edidHex = null;
                 if (deviceId != null)
                 {
-                    var (monitorId, driverId) = this.ParseMonitorDriverId(deviceId);
-                    edidHex = this.GetMonitorEdidHexFromRegistry(monitorId, driverId);
+                    var (monitorId, driverId) = ParseMonitorDriverId(deviceId);
+                    edidHex = GetMonitorEdidHexFromRegistry(monitorId, driverId);
+                }
+
+                string? wmiInstanceName = null;
+                if (edidHex != null)
+                {
+                    if (wmiInstanceNameByEdidhex.TryGetValue(edidHex, out var tuple))
+                        wmiInstanceName = tuple.InstanceName;
                 }
 
                 displayMonitor.PhysicalMonitors.AddRange(
@@ -132,6 +143,7 @@ public class ScreenQuery : IScreenQuery
                         Description = element.szPhysicalMonitorDescription.ToString(),
                         DeviceId = deviceId,
                         EdidHex = edidHex,
+                        WmiInstanceName = wmiInstanceName,
                     })
                 );
 
@@ -142,7 +154,38 @@ public class ScreenQuery : IScreenQuery
         return new ScreenInformation(displayMonitors);
     }
 
-    private string GetMonitorEdidHexFromRegistry(string monitorId, string driverId)
+    private static Dictionary<
+        string,
+        (string EdidHex, string InstanceName)
+    > GetWmiInstanceNameByEdidHex()
+    {
+        Dictionary<string, (string EdidHex, string InstanceName)> result = [];
+
+        // see https://learn.microsoft.com/en-us/windows/win32/wmicoreprov/wmimonitordescriptormethods
+        ManagementScope scope = new(@"root\WMI");
+        ObjectQuery query = new("SELECT * FROM WmiMonitorDescriptorMethods");
+
+        ManagementObjectSearcher searcher = new(scope, query);
+        foreach (var wmiObject in searcher.Get().OfType<ManagementObject>())
+        {
+            // see https://learn.microsoft.com/en-us/windows/win32/wmicoreprov/wmigetmonitorraweedidv1block-wmimonitordescriptormethods
+            var inParameters = wmiObject.GetMethodParameters("WmiGetMonitorRawEEdidV1Block");
+            inParameters["BlockId"] = 0;
+            var outParameters = wmiObject.InvokeMethod(
+                "WmiGetMonitorRawEEdidV1Block",
+                inParameters,
+                new()
+            );
+
+            var edidBytes = (byte[])outParameters["BlockContent"];
+            var edidHex = Convert.ToHexString(edidBytes);
+            result.Add(edidHex, (edidHex, wmiObject["InstanceName"]?.ToString()!));
+        }
+
+        return result;
+    }
+
+    private static string GetMonitorEdidHexFromRegistry(string monitorId, string driverId)
     {
         var key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
         key = key.OpenSubKey($@"SYSTEM\CurrentControlSet\Enum\Display\{monitorId}");
@@ -165,7 +208,7 @@ public class ScreenQuery : IScreenQuery
         );
     }
 
-    private (string MonitorId, string DriverId) ParseMonitorDriverId(string deviceId)
+    private static (string MonitorId, string DriverId) ParseMonitorDriverId(string deviceId)
     {
         var match = Regex.Match(deviceId, @"MONITOR\\(?<monitorId>\w+)\\(?<driverId>.*)");
         return (match.Groups["monitorId"].Value, match.Groups["driverId"].Value);
