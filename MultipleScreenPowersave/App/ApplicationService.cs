@@ -246,8 +246,27 @@ public class ApplicationService : IApplicationService
     /// <inheritdoc/>
     public void TurnOnAllMonitors()
     {
+        (PhysicalMonitorInformation PhysicalMonitor, Exception? Exception)? lastError = null;
+
         foreach (var monitor in this.screenQuery.GetScreenInformation().PhysicalMonitors)
-            this.displayControlServiceFacade.TurnOnMonitor(monitor);
+        {
+            try
+            {
+                this.displayControlServiceFacade.TurnOnMonitor(monitor);
+            }
+            catch (Exception e)
+            {
+                lastError = (monitor, e);
+            }
+        }
+
+        if (lastError.HasValue)
+        {
+            throw new InvalidOperationException(
+                $"Failed to turn off monitor {lastError.Value.PhysicalMonitor.Handle}",
+                lastError.Value.Exception
+            );
+        }
     }
 
     private static bool TryGetDisplayMonitorByRect(

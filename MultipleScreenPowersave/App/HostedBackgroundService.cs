@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Serilog;
 
 /// <summary>
 /// Long running hosted service periodically calling the <see cref="ApplicationService"/>.
@@ -31,7 +32,15 @@ public class HostedBackgroundService(
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            applicationService.TurnOnOnlyUsedMonitors();
+            try
+            {
+                applicationService.TurnOnOnlyUsedMonitors();
+            }
+            catch (Exception e)
+            {
+                Log.Logger.Error("Failed to turn on only used monitors: {e}", e);
+            }
+
             Thread.Sleep(options.Value.SleepTimeMs);
         }
 
