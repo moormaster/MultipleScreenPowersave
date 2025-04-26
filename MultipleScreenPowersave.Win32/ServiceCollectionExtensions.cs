@@ -2,7 +2,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using MultipleScreenPowersave.App;
-using MultipleScreenPowersave.Configuration;
 using MultipleScreenPowersave.Query;
 
 /// <summary>
@@ -13,21 +12,25 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Configure platform specific services and options for MultipleScreenpowersave application.
     /// </summary>
-    /// <param name="services">Servicecollection.</param>
-    public static void AddMultipleScreenPowerSaveWindowsPlatformServices(
+    /// <param name="services">ServiceCollection.</param>
+    /// <returns>The ServiceCollection.</returns>
+    public static IServiceCollection AddMultipleScreenPowerSaveWindowsPlatformServices(
         this IServiceCollection services
     )
     {
-        services.AddTransient(
-            typeof(IDisplayBacklightService),
-            typeof(App.WindowsImpl.DisplayBacklightService)
-        );
-        services.AddTransient(
-            typeof(IDisplayDataChannelService),
-            typeof(App.WindowsImpl.DisplayDataChannelService)
-        );
-        services.AddTransient(typeof(IMouseQuery), typeof(Query.WindowsImpl.MouseQuery));
-        services.AddTransient(typeof(IScreenQuery), typeof(Query.WindowsImpl.ScreenQuery));
-        services.AddTransient(typeof(IWindowQuery), typeof(Query.WindowsImpl.WindowQuery));
+        services
+            .AddTransient(
+                typeof(IDisplayBacklightService),
+                typeof(App.WindowsImpl.DisplayBacklightService)
+            )
+            .AddTransient(
+                typeof(IDisplayDataChannelService),
+                typeof(App.WindowsImpl.DisplayDataChannelService)
+            )
+            .AddTransient(typeof(IMouseQuery), typeof(Query.WindowsImpl.MouseQuery))
+            .AddTransient(typeof(IScreenQuery), typeof(Query.WindowsImpl.ScreenQuery))
+            .AddTransient(typeof(IWindowQuery), typeof(Query.WindowsImpl.WindowQuery));
+
+        return services;
     }
 }

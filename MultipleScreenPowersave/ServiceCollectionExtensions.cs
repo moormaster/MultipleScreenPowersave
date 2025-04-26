@@ -14,20 +14,22 @@ public static class ServiceCollectionExtensions
     /// Configure services and options for MultipleScreenpowersave application.
     /// This method does not register platform specific services like <see cref="IMouseQuery"/>, <see cref="IScreenQuery"/> or <see cref="IWindowQuery"/>.
     /// </summary>
-    /// <param name="services">Servicecollection.</param>
-    public static void AddMultipleScreenPowerSaveBackgroundService(this IServiceCollection services)
+    /// <param name="services">ServiceCollection.</param>
+    /// <returns>The ServiceCollection.</returns>
+    public static IServiceCollection AddMultipleScreenPowerSaveBackgroundService(
+        this IServiceCollection services
+    )
     {
         services
             .AddOptions<HostedBackgroundServiceOptions>()
             .BindConfiguration("hostedBackgroundService");
         services.AddOptions<BlacklistOptions>().BindConfiguration("blacklist");
 
-        services.AddTransient(typeof(IApplicationService), typeof(ApplicationService));
-        services.AddTransient(
-            typeof(IDisplayControlServiceFacade),
-            typeof(DisplayControlServiceFacade)
-        );
+        services
+            .AddTransient(typeof(IApplicationService), typeof(ApplicationService))
+            .AddTransient(typeof(IDisplayControlServiceFacade), typeof(DisplayControlServiceFacade))
+            .AddHostedService<HostedBackgroundService>();
 
-        services.AddHostedService<HostedBackgroundService>();
+        return services;
     }
 }

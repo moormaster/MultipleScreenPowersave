@@ -18,7 +18,7 @@ public class DisplayMonitorInformation(
     DisplayMonitorHandle handle,
     bool isPrimary,
     Rect monitorRectangle
-    )
+)
 {
     /// <summary>
     /// Gets the DisplayMonitor.

@@ -18,15 +18,16 @@ public static class Program
         SetupSerilog();
 
         var hostBuilder = Host.CreateApplicationBuilder();
-        hostBuilder.Services.AddMultipleScreenPowerSaveBackgroundService();
-        hostBuilder.Services.AddMultipleScreenPowerSaveWindowsPlatformServices();
-        hostBuilder.Services.AddSerilog(
-            (services, configuration) =>
-            {
-                configuration.ReadFrom.Configuration(hostBuilder.Configuration);
-                configuration.ReadFrom.Services(services);
-            }
-        );
+        hostBuilder
+            .Services.AddMultipleScreenPowerSaveBackgroundService()
+            .AddMultipleScreenPowerSaveWindowsPlatformServices()
+            .AddSerilog(
+                (services, configuration) =>
+                {
+                    configuration.ReadFrom.Configuration(hostBuilder.Configuration);
+                    configuration.ReadFrom.Services(services);
+                }
+            );
 
         var host = hostBuilder.Build();
 

@@ -13,7 +13,6 @@ using MultipleScreenPowersave.Model;
 /// <exception cref="ArgumentNullException">All arguments were null.</exception>
 public class PhysicalMonitorBlacklistEntry(string? description)
 {
-
     /// <summary>
     /// Gets the the pattern for the regular expression that should match to the physical monitors description to be blacklisted.
     /// </summary>

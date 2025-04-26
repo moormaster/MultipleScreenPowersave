@@ -16,9 +16,8 @@ public class DisplayControlServiceFacade(
     IDisplayBacklightService displayBacklightService,
     IDisplayDataChannelService displayDataChannelService,
     ILogger<DisplayControlServiceFacade> logger
-    ) : IDisplayControlServiceFacade
+) : IDisplayControlServiceFacade
 {
-
     /// <inheritdoc/>
     public void TurnOffMonitor(PhysicalMonitorInformation monitor)
     {
