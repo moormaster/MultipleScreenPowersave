@@ -1,6 +1,7 @@
 ﻿namespace MultipleScreenPowersave.App;
 
 using CommunityToolkit.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Maui.Graphics;
 using MultipleScreenPowersave.Configuration;
@@ -8,7 +9,6 @@ using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
-using Serilog;
 
 /// <summary>
 /// ApplicationService providing functions to turn off Monitors based on activity.
@@ -17,6 +17,7 @@ public class ApplicationService : IApplicationService
 {
     private const int MainWindowHandleCacheLifetimeMs = 60000;
     private readonly IDisplayControlServiceFacade displayControlServiceFacade;
+    private readonly ILogger<ApplicationService> logger;
     private readonly IMouseQuery mouseQuery;
     private readonly IScreenQuery screenQuery;
     private readonly IWindowQuery windowQuery;
@@ -26,12 +27,14 @@ public class ApplicationService : IApplicationService
     /// Initializes a new instance of the <see cref="ApplicationService"/> class.
     /// </summary>
     /// <param name="displayControlServiceFacade">DisplayControlServiceFacade instance.</param>
+    /// <param name="logger">Logger instance.</param>
     /// <param name="mouseQuery">MouseQuery instance.</param>
     /// <param name="screenQuery">ScreenQuery instance.</param>
     /// <param name="windowQuery">WindowQuery instance.</param>
     /// <param name="blacklistOptions">Blacklist options.</param>
     public ApplicationService(
         IDisplayControlServiceFacade displayControlServiceFacade,
+        ILogger<ApplicationService> logger,
         IMouseQuery mouseQuery,
         IScreenQuery screenQuery,
         IWindowQuery windowQuery,
@@ -39,19 +42,21 @@ public class ApplicationService : IApplicationService
     )
     {
         Guard.IsNotNull(displayControlServiceFacade);
+        Guard.IsNotNull(logger);
         Guard.IsNotNull(mouseQuery);
         Guard.IsNotNull(screenQuery);
         Guard.IsNotNull(windowQuery);
         Guard.IsNotNull(blacklistOptions);
 
         this.displayControlServiceFacade = displayControlServiceFacade;
+        this.logger = logger;
         this.mouseQuery = mouseQuery;
         this.screenQuery = screenQuery;
         this.windowQuery = windowQuery;
         this.blacklistOptions = blacklistOptions;
 
         var screenInformation = this.screenQuery.GetScreenInformation();
-        Log.Logger.Debug("{screenInformation}", screenInformation);
+        this.logger.LogDebug("{screenInformation}", screenInformation);
     }
 
     /// <inheritdoc/>
@@ -81,7 +86,7 @@ public class ApplicationService : IApplicationService
                 // enable physical monitors currently visited by the mouse cursor
                 foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
                 {
-                    Log.Logger.Debug(
+                    this.logger.LogDebug(
                         "PhysicalMonitor #{physicalMonitorHandle}: Mouse cursor position ({x}x{y})",
                         physicalMonitor.Handle,
                         currentCursorPosition.X,
@@ -90,7 +95,7 @@ public class ApplicationService : IApplicationService
 
                     if (IsIgnoreMouse(blacklist, currentCursorPosition))
                     {
-                        Log.Logger.Debug(
+                        this.logger.LogDebug(
                             "Blacklisted mouse cursor position ({x}x{y})",
                             currentCursorPosition.X,
                             currentCursorPosition.Y
@@ -116,13 +121,13 @@ public class ApplicationService : IApplicationService
 
             if (IsBlacklisted(blacklist, windowProcessInformation))
             {
-                Log.Logger.Debug(
+                this.logger.LogDebug(
                     "Blacklisted ProcessName: \"{processName}\" - WindowTitle: \"{windowTitle}\" (#{windowHandle})",
                     windowProcessInformation.ProcessName,
                     windowProcessInformation.WindowTitle,
                     windowProcessInformation.Handle
                 );
-                Log.Logger.Debug(
+                this.logger.LogDebug(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
 #if WINDOWS
                     windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
@@ -141,16 +146,16 @@ public class ApplicationService : IApplicationService
 
             if (displayMonitor is null)
             {
-                Log.Logger.Error(
+                this.logger.LogError(
                     "Failed to determine DisplayMonitor for windowProcessInformation:"
                 );
-                Log.Logger.Error(
+                this.logger.LogError(
                     "\tProcessName: \"{processName}\" - WindowTitle: \"{windowTitle}\" (#{windowHandle})",
                     windowProcessInformation.ProcessName,
                     windowProcessInformation.WindowTitle,
                     windowProcessInformation.Handle
                 );
-                Log.Logger.Error(
+                this.logger.LogError(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
 #if WINDOWS
                     windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
@@ -169,14 +174,14 @@ public class ApplicationService : IApplicationService
 
             foreach (var physicalMonitor in displayMonitor.PhysicalMonitors)
             {
-                Log.Logger.Debug(
+                this.logger.LogDebug(
                     "PhysicalMonitor #{physicalMonitorHandle}: ProcessName: \"{processName}\" - WindowTitle: \"{windowText}\" (#{windowHandle})",
                     physicalMonitor.Handle,
                     windowProcessInformation.ProcessName,
                     windowProcessInformation.WindowTitle,
                     windowProcessInformation.Handle
                 );
-                Log.Logger.Debug(
+                this.logger.LogDebug(
                     "\tdwStyle: {dwStyle}, dwExStyle: {dwExStyle}, Pos: ({x}, {y}), Size: {width}x{height}",
 #if WINDOWS
                     windowProcessInformation.DwStyle?.WindowStyleToString() ?? null,
@@ -212,7 +217,7 @@ public class ApplicationService : IApplicationService
             {
                 try
                 {
-                    Log.Logger.Information(
+                    this.logger.LogInformation(
                         "Turning on physical monitor #{physicalMonitorHandle}",
                         physicalMonitor.Handle
                     );
@@ -221,12 +226,12 @@ public class ApplicationService : IApplicationService
                 }
                 catch (Exception e)
                 {
-                    Log.Logger.Error("{exception}", e);
+                    this.logger.LogError("{exception}", e);
                 }
             }
             else
             {
-                Log.Logger.Information(
+                this.logger.LogInformation(
                     "Turning off physical monitor #{physicalMonitorHandle}",
                     physicalMonitor.Handle
                 );
@@ -237,7 +242,7 @@ public class ApplicationService : IApplicationService
                 }
                 catch (Exception e)
                 {
-                    Log.Logger.Error("{exception}", e);
+                    this.logger.LogError("{exception}", e);
                 }
             }
         }

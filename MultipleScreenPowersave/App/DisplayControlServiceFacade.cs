@@ -1,7 +1,7 @@
 namespace MultipleScreenPowersave.App;
 
+using Microsoft.Extensions.Logging;
 using MultipleScreenPowersave.Model;
-using Serilog;
 
 /// <summary>
 /// Implementation of <see cref="IDisplayControlServiceFacade"/>.
@@ -10,19 +10,23 @@ public class DisplayControlServiceFacade : IDisplayControlServiceFacade
 {
     private readonly IDisplayBacklightService displayBacklightService;
     private readonly IDisplayDataChannelService displayDataChannelService;
+    private readonly ILogger<DisplayControlServiceFacade> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DisplayControlServiceFacade"/> class.
     /// </summary>
     /// <param name="displayBacklightService">DisplayBacklightService instance.</param>
     /// <param name="displayDataChannelService">DisplayDataChannelService instance.</param>
+    /// <param name="logger">Logger instance.</param>
     public DisplayControlServiceFacade(
         IDisplayBacklightService displayBacklightService,
-        IDisplayDataChannelService displayDataChannelService
+        IDisplayDataChannelService displayDataChannelService,
+        ILogger<DisplayControlServiceFacade> logger
     )
     {
         this.displayBacklightService = displayBacklightService;
         this.displayDataChannelService = displayDataChannelService;
+        this.logger = logger;
     }
 
     /// <inheritdoc/>
@@ -35,16 +39,16 @@ public class DisplayControlServiceFacade : IDisplayControlServiceFacade
         }
         catch (InvalidOperationException e)
         {
-            Log.Logger.Warning(
+            this.logger.LogWarning(
                 "Failed to turn off monitor {monitorHandle} using DDC",
                 monitor.Handle
             );
-            Log.Logger.Debug("{exception}", e);
+            this.logger.LogDebug("{exception}", e);
         }
 
         try
         {
-            Log.Logger.Warning(
+            this.logger.LogWarning(
                 "Turning off monitor {monitorHandle} using backlight control instead",
                 monitor.Handle
             );
@@ -53,11 +57,11 @@ public class DisplayControlServiceFacade : IDisplayControlServiceFacade
         }
         catch (InvalidOperationException e)
         {
-            Log.Logger.Warning(
+            this.logger.LogWarning(
                 "Failed to turn off monitor {monitorHandle} using backlight control",
                 monitor.Handle
             );
-            Log.Logger.Debug("{exception}", e);
+            this.logger.LogDebug("{exception}", e);
             throw;
         }
     }
@@ -72,16 +76,16 @@ public class DisplayControlServiceFacade : IDisplayControlServiceFacade
         }
         catch (InvalidOperationException e)
         {
-            Log.Logger.Warning(
+            this.logger.LogWarning(
                 "Failed to turn on monitor {monitorHandle} using DDC",
                 monitor.Handle
             );
-            Log.Logger.Debug("{exception}", e);
+            this.logger.LogDebug("{exception}", e);
         }
 
         try
         {
-            Log.Logger.Warning(
+            this.logger.LogWarning(
                 "Turning on monitor {monitorHandle} using backlight control instead",
                 monitor.Handle
             );
@@ -90,11 +94,11 @@ public class DisplayControlServiceFacade : IDisplayControlServiceFacade
         }
         catch (InvalidOperationException e)
         {
-            Log.Logger.Warning(
+            this.logger.LogWarning(
                 "Failed to turn on monitor {monitorHandle} using backlight control",
                 monitor.Handle
             );
-            Log.Logger.Debug("{exception}", e);
+            this.logger.LogDebug("{exception}", e);
             throw;
         }
     }

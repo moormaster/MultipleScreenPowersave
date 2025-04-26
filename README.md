@@ -49,8 +49,14 @@ Executable files and their dependencies are being created in folder `MultipleScr
 	```
 
     You can take a look at the debug output to see processNames and windowNames of existing windows.
-- To enable debug output change `restrictedToMinimumLevel` in `App.config` to "Debug":
+- To enable debug output change `restrictedToMinimumLevel` in `appsettings.json` to "Debug":
 
     ```
-    <add key="serilog:write-to:Console.restrictedToMinimumLevel" value="Debug" />
+    "WriteTo": {
+      "ConsoleLog": {
+        "Name": "Console",
+        "Args": {
+          "restrictedToMinimumLevel": "Debug"
+        }
+    },
     ```

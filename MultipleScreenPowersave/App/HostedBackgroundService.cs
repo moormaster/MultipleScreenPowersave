@@ -1,8 +1,8 @@
 ﻿namespace MultipleScreenPowersave.App;
 
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Serilog;
 
 /// <summary>
 /// Long running hosted service periodically calling the <see cref="ApplicationService"/>.
@@ -11,9 +11,11 @@ using Serilog;
 /// Initializes a new instance of the <see cref="HostedBackgroundService"/> class.
 /// </remarks>
 /// <param name="applicationService">ApplicationService instance.</param>
+/// <param name="logger">Logger instance.</param>
 /// <param name="options">HostedBackgroundService options.</param>
 public class HostedBackgroundService(
     IApplicationService applicationService,
+    ILogger<HostedBackgroundService> logger,
     IOptions<HostedBackgroundServiceOptions> options
 ) : BackgroundService, IHostedBackgroundService
 {
@@ -38,7 +40,7 @@ public class HostedBackgroundService(
             }
             catch (Exception e)
             {
-                Log.Logger.Error("Failed to turn on only used monitors: {e}", e);
+                logger.LogError("Failed to turn on only used monitors: {e}", e);
             }
 
             Thread.Sleep(options.Value.SleepTimeMs);

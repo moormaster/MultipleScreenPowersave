@@ -3,7 +3,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MultipleScreenPowersave.App;
-using MultipleScreenPowersave.Configuration;
 using Serilog;
 
 /// <summary>
@@ -21,6 +20,13 @@ public static class Program
         var hostBuilder = Host.CreateApplicationBuilder();
         hostBuilder.Services.AddMultipleScreenPowerSaveBackgroundService();
         hostBuilder.Services.AddMultipleScreenPowerSaveWindowsPlatformServices();
+        hostBuilder.Services.AddSerilog(
+            (services, configuration) =>
+            {
+                configuration.ReadFrom.Configuration(hostBuilder.Configuration);
+                configuration.ReadFrom.Services(services);
+            }
+        );
 
         var host = hostBuilder.Build();
 
@@ -38,9 +44,6 @@ public static class Program
 
     private static void SetupSerilog()
     {
-        Log.Logger = new LoggerConfiguration()
-            .ReadFrom.AppSettings(filePath: ConfigFilePath.AppConfig)
-            .ReadFrom.AppSettings(settingPrefix: "serilogDebug", filePath: ConfigFilePath.AppConfig)
-            .CreateLogger();
+        Log.Logger = new LoggerConfiguration().CreateLogger();
     }
 }
