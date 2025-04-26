@@ -1,6 +1,7 @@
 namespace MultipleScreenPowersave.App.WindowsImpl;
 
 using System.Management;
+using CommunityToolkit.Diagnostics;
 using MultipleScreenPowersave.Model;
 
 /// <summary>
@@ -15,6 +16,8 @@ public class DisplayBacklightService : IDisplayBacklightService
     /// <inheritdoc/>
     public void TurnOffMonitor(PhysicalMonitorInformation monitor)
     {
+        Guard.IsNotNullOrWhiteSpace(monitor.WmiInstanceName);
+
         var previousBrightnessInPercent = WmiGetCurrentBrightness(monitor.WmiInstanceName!);
 
         if (previousBrightnessInPercent > 0)
@@ -28,6 +31,8 @@ public class DisplayBacklightService : IDisplayBacklightService
     /// <inheritdoc/>
     public void TurnOnMonitor(PhysicalMonitorInformation monitor)
     {
+        Guard.IsNotNullOrWhiteSpace(monitor.WmiInstanceName);
+
         if (
             !this.previousBrightnessInPercentByWmiInstance.TryGetValue(
                 monitor.WmiInstanceName!,

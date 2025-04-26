@@ -2,6 +2,7 @@
 
 using CommunityToolkit.Diagnostics;
 using MultipleScreenPowersave.Model;
+using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.VCP;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -18,6 +19,8 @@ public class DisplayDataChannelService : IDisplayDataChannelService
     /// <exception cref="InvalidOperationException">Failure to turn off monitor.</exception>
     public void TurnOffMonitor(PhysicalMonitorInformation monitor)
     {
+        Guard.IsFalse(monitor.Handle == PhysicalMonitorHandle.Empty);
+
         var hresult = PInvoke.SetVCPFeature(
             (HANDLE)monitor.Handle.Value,
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
@@ -41,6 +44,8 @@ public class DisplayDataChannelService : IDisplayDataChannelService
     /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
     public void TurnOnMonitor(PhysicalMonitorInformation monitor)
     {
+        Guard.IsFalse(monitor.Handle == PhysicalMonitorHandle.Empty);
+
         var hresult = PInvoke.SetVCPFeature(
             (HANDLE)monitor.Handle.Value,
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099

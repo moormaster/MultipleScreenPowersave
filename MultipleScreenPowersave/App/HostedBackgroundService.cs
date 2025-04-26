@@ -24,7 +24,14 @@ public class HostedBackgroundService(
     {
         base.StopAsync(cancellationToken);
 
-        applicationService.TurnOnAllMonitors();
+        try
+        {
+            applicationService.TurnOnAllMonitors();
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Failed to turn back on all monitors: {e}", e);
+        }
 
         return Task.CompletedTask;
     }
