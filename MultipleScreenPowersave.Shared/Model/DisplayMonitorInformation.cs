@@ -8,46 +8,37 @@ using MultipleScreenPowersave.Query;
 /// <summary>
 /// Dto returned by <see cref="IScreenQuery.GetScreenInformation"/>.
 /// </summary>
-public class DisplayMonitorInformation
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DisplayMonitorInformation"/> class.
-    /// </summary>
-    /// <param name="handle">DisplayMonitorHandle.</param>
-    /// <param name="isPrimary">Value indicating whether the current DisplayMonitor is the primary one.</param>
-    /// <param name="monitorRectangle">MonitorRectangle (position and dimension) of the DisplayMonitor.</param>
-    public DisplayMonitorInformation(
-        DisplayMonitorHandle handle,
-        bool isPrimary,
-        Rect monitorRectangle
+/// <remarks>
+/// Initializes a new instance of the <see cref="DisplayMonitorInformation"/> class.
+/// </remarks>
+/// <param name="handle">DisplayMonitorHandle.</param>
+/// <param name="isPrimary">Value indicating whether the current DisplayMonitor is the primary one.</param>
+/// <param name="monitorRectangle">MonitorRectangle (position and dimension) of the DisplayMonitor.</param>
+public class DisplayMonitorInformation(
+    DisplayMonitorHandle handle,
+    bool isPrimary,
+    Rect monitorRectangle
     )
-    {
-        this.Handle = handle;
-        this.IsPrimary = isPrimary;
-        this.MonitorRectangle = monitorRectangle;
-
-        this.PhysicalMonitors = new List<PhysicalMonitorInformation>();
-    }
-
+{
     /// <summary>
     /// Gets the DisplayMonitor.
     /// </summary>
-    public DisplayMonitorHandle Handle { get; }
+    public DisplayMonitorHandle Handle { get; } = handle;
 
     /// <summary>
     /// Gets a value indicating whether the current DisplayMonitor is the primary one.
     /// </summary>
-    public bool IsPrimary { get; }
+    public bool IsPrimary { get; } = isPrimary;
 
     /// <summary>
     /// Gets the MonitorRectangle (position and dimension) of the DisplayMonitor.
     /// </summary>
-    public Rect MonitorRectangle { get; }
+    public Rect MonitorRectangle { get; } = monitorRectangle;
 
     /// <summary>
     /// Gets the List of all PhysicalMonitors belonging to this DisplayMonitor.
     /// </summary>
-    public List<PhysicalMonitorInformation> PhysicalMonitors { get; }
+    public List<PhysicalMonitorInformation> PhysicalMonitors { get; } = [];
 
     /// <summary>
     /// Gets the size (dimensions) of the DisplayMonitor.

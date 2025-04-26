@@ -6,62 +6,52 @@ using MultipleScreenPowersave.Model;
 /// <summary>
 /// Implementation of <see cref="IDisplayControlServiceFacade"/>.
 /// </summary>
-public class DisplayControlServiceFacade : IDisplayControlServiceFacade
+/// <remarks>
+/// Initializes a new instance of the <see cref="DisplayControlServiceFacade"/> class.
+/// </remarks>
+/// <param name="displayBacklightService">DisplayBacklightService instance.</param>
+/// <param name="displayDataChannelService">DisplayDataChannelService instance.</param>
+/// <param name="logger">Logger instance.</param>
+public class DisplayControlServiceFacade(
+    IDisplayBacklightService displayBacklightService,
+    IDisplayDataChannelService displayDataChannelService,
+    ILogger<DisplayControlServiceFacade> logger
+    ) : IDisplayControlServiceFacade
 {
-    private readonly IDisplayBacklightService displayBacklightService;
-    private readonly IDisplayDataChannelService displayDataChannelService;
-    private readonly ILogger<DisplayControlServiceFacade> logger;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DisplayControlServiceFacade"/> class.
-    /// </summary>
-    /// <param name="displayBacklightService">DisplayBacklightService instance.</param>
-    /// <param name="displayDataChannelService">DisplayDataChannelService instance.</param>
-    /// <param name="logger">Logger instance.</param>
-    public DisplayControlServiceFacade(
-        IDisplayBacklightService displayBacklightService,
-        IDisplayDataChannelService displayDataChannelService,
-        ILogger<DisplayControlServiceFacade> logger
-    )
-    {
-        this.displayBacklightService = displayBacklightService;
-        this.displayDataChannelService = displayDataChannelService;
-        this.logger = logger;
-    }
 
     /// <inheritdoc/>
     public void TurnOffMonitor(PhysicalMonitorInformation monitor)
     {
         try
         {
-            this.displayDataChannelService.TurnOffMonitor(monitor);
+            displayDataChannelService.TurnOffMonitor(monitor);
             return;
         }
         catch (InvalidOperationException e)
         {
-            this.logger.LogWarning(
+            logger.LogWarning(
                 "Failed to turn off monitor {monitorHandle} using DDC",
                 monitor.Handle
             );
-            this.logger.LogDebug("{exception}", e);
+            logger.LogDebug("{exception}", e);
         }
 
         try
         {
-            this.logger.LogWarning(
+            logger.LogWarning(
                 "Turning off monitor {monitorHandle} using backlight control instead",
                 monitor.Handle
             );
-            this.displayBacklightService.TurnOffMonitor(monitor);
+            displayBacklightService.TurnOffMonitor(monitor);
             return;
         }
         catch (InvalidOperationException e)
         {
-            this.logger.LogWarning(
+            logger.LogWarning(
                 "Failed to turn off monitor {monitorHandle} using backlight control",
                 monitor.Handle
             );
-            this.logger.LogDebug("{exception}", e);
+            logger.LogDebug("{exception}", e);
             throw;
         }
     }
@@ -71,34 +61,34 @@ public class DisplayControlServiceFacade : IDisplayControlServiceFacade
     {
         try
         {
-            this.displayDataChannelService.TurnOnMonitor(monitor);
+            displayDataChannelService.TurnOnMonitor(monitor);
             return;
         }
         catch (InvalidOperationException e)
         {
-            this.logger.LogWarning(
+            logger.LogWarning(
                 "Failed to turn on monitor {monitorHandle} using DDC",
                 monitor.Handle
             );
-            this.logger.LogDebug("{exception}", e);
+            logger.LogDebug("{exception}", e);
         }
 
         try
         {
-            this.logger.LogWarning(
+            logger.LogWarning(
                 "Turning on monitor {monitorHandle} using backlight control instead",
                 monitor.Handle
             );
-            this.displayBacklightService.TurnOnMonitor(monitor);
+            displayBacklightService.TurnOnMonitor(monitor);
             return;
         }
         catch (InvalidOperationException e)
         {
-            this.logger.LogWarning(
+            logger.LogWarning(
                 "Failed to turn on monitor {monitorHandle} using backlight control",
                 monitor.Handle
             );
-            this.logger.LogDebug("{exception}", e);
+            logger.LogDebug("{exception}", e);
             throw;
         }
     }

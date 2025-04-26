@@ -6,22 +6,18 @@ using MultipleScreenPowersave.Model;
 /// <summary>
 /// Entry describing a PhysicalMonitor to be blacklisted.
 /// </summary>
-public class PhysicalMonitorBlacklistEntry
+/// <remarks>
+/// Initializes a new instance of the <see cref="PhysicalMonitorBlacklistEntry"/> class.
+/// </remarks>
+/// <param name="description">Regular expression that should match to the physical monitors description to be blacklisted.</param>
+/// <exception cref="ArgumentNullException">All arguments were null.</exception>
+public class PhysicalMonitorBlacklistEntry(string? description)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PhysicalMonitorBlacklistEntry"/> class.
-    /// </summary>
-    /// <param name="description">Regular expression that should match to the physical monitors description to be blacklisted.</param>
-    /// <exception cref="ArgumentNullException">All arguments were null.</exception>
-    public PhysicalMonitorBlacklistEntry(string? description)
-    {
-        this.Description = description;
-    }
 
     /// <summary>
     /// Gets the the pattern for the regular expression that should match to the physical monitors description to be blacklisted.
     /// </summary>
-    public string? Description { get; }
+    public string? Description { get; } = description;
 
     /// <summary>
     /// Gets the regular expression that should match to the physical monitors description to be blacklisted.
