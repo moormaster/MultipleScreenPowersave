@@ -135,9 +135,11 @@ public class ScreenQuery : IScreenQuery
                         wmiInstanceName = tuple.InstanceName;
                 }
 
+                uint physicalMonitorIndex = 0;
                 displayMonitor.PhysicalMonitors.AddRange(
                     physicalMonitors.Select(element => new PhysicalMonitorInformation(
-                        new PhysicalMonitorHandle((int)element.hPhysicalMonitor)
+                        new PhysicalMonitorHandle((int)element.hPhysicalMonitor),
+                        physicalMonitorIndex++
                     )
                     {
                         Description = element.szPhysicalMonitorDescription.ToString(),

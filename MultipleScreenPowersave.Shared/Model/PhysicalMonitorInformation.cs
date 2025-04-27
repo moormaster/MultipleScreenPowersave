@@ -8,12 +8,18 @@ using MultipleScreenPowersave.Query;
 /// Dto returned by <see cref="IScreenQuery.GetScreenInformation"/>.
 /// </summary>
 /// <param name="handle">PhysicalMonitorHandle.</param>
-public class PhysicalMonitorInformation(PhysicalMonitorHandle handle)
+/// <param name="index">0-based index within <see cref="ScreenInformation.PhysicalMonitors"/> collection.</param>
+public class PhysicalMonitorInformation(PhysicalMonitorHandle handle, uint index)
 {
     /// <summary>
     /// Gets the PhysicalMonitorHandle.
     /// </summary>
     public PhysicalMonitorHandle Handle { get; } = handle;
+
+    /// <summary>
+    /// Gets the 0-based index within <see cref="ScreenInformation.PhysicalMonitors"/> collection.
+    /// </summary>
+    public uint Index { get; } = index;
 
     /// <summary>
     /// Gets or sets the text description of the physical monitor.
