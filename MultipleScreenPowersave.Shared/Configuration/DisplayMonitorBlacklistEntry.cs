@@ -33,7 +33,7 @@ public record class DisplayMonitorBlacklistEntry
     }
 
     /// <summary>
-    /// Gets the flag indicating wether the primary monitor should be blacklisted.
+    /// Gets the flag indicating whether the primary monitor should be blacklisted.
     /// </summary>
     public bool? IsPrimary { get; }
 

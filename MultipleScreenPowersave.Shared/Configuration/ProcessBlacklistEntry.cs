@@ -50,7 +50,7 @@ public record class ProcessBlacklistEntry
     public Regex? WindowTitleRegex => this.WindowTitle != null ? new Regex(this.WindowTitle) : null;
 
     /// <summary>
-    /// Determines wether this entry matches to the given WindowProcessInformation.
+    /// Determines whether this entry matches to the given WindowProcessInformation.
     /// </summary>
     /// <param name="windowProcessInformation">WindowProcessInformation to check against.</param>
     /// <returns>True iff processName and windowTitle regular expressions match to the given WindowProcessInformation.</returns>
