@@ -19,18 +19,21 @@ public class DisplayControlServiceFacade(
 ) : IDisplayControlServiceFacade
 {
     /// <inheritdoc/>
-    public void TurnOffMonitor(PhysicalMonitorInformation monitor)
+    public void TurnOffMonitor(
+        PhysicalMonitorInformation physicalMonitor,
+        DisplayMonitorInformation virtualMonitor
+    )
     {
         try
         {
-            displayDataChannelService.TurnOffMonitor(monitor);
+            displayDataChannelService.TurnOffMonitor(physicalMonitor, virtualMonitor);
             return;
         }
         catch (InvalidOperationException e)
         {
             logger.LogWarning(
                 "Failed to turn off monitor {monitorHandle} using DDC",
-                monitor.Handle
+                physicalMonitor.Handle
             );
             logger.LogDebug("{exception}", e);
         }
@@ -39,16 +42,16 @@ public class DisplayControlServiceFacade(
         {
             logger.LogWarning(
                 "Turning off monitor {monitorHandle} using backlight control instead",
-                monitor.Handle
+                physicalMonitor.Handle
             );
-            displayBacklightService.TurnOffMonitor(monitor);
+            displayBacklightService.TurnOffMonitor(physicalMonitor, virtualMonitor);
             return;
         }
         catch (InvalidOperationException e)
         {
             logger.LogWarning(
                 "Failed to turn off monitor {monitorHandle} using backlight control",
-                monitor.Handle
+                physicalMonitor.Handle
             );
             logger.LogDebug("{exception}", e);
             throw;

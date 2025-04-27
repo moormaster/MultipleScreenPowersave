@@ -202,15 +202,27 @@ public class ApplicationService : IApplicationService
 
         var physicalMonitorByHandle = screenInformation.PhysicalMonitorByHandle;
         var isMonitorNeededWithPhysicalMonitorInformation = isMonitorNeededByHandle.Join(
-            screenInformation.PhysicalMonitorByHandle,
-            outerKeySelector: physicalMonitorByHandleItem => physicalMonitorByHandleItem.Key,
-            innerKeySelector: isMonitorNeeded => isMonitorNeeded.Key,
-            resultSelector: (isMonitorNeeded, physicalMonitor) =>
-                (IsMonitorNeeded: isMonitorNeeded.Value, PhysicalMonitor: physicalMonitor.Value)
+            screenInformation.DisplayMonitors.SelectMany(
+                displayMonitor => displayMonitor.PhysicalMonitors,
+                (displayMonitor, physicalMonitor) =>
+                    (DisplayMonitor: displayMonitor, PhysicalMonitor: physicalMonitor)
+            ),
+            outerKeySelector: isMonitorNeeded => isMonitorNeeded.Key,
+            innerKeySelector: tuple => tuple.PhysicalMonitor.Handle,
+            resultSelector: (isMonitorNeeded, tuple) =>
+                (
+                    IsMonitorNeeded: isMonitorNeeded.Value,
+                    tuple.PhysicalMonitor,
+                    tuple.DisplayMonitor
+                )
         );
 
         foreach (
-            var (isMonitorNeeded, physicalMonitor) in isMonitorNeededWithPhysicalMonitorInformation
+            var (
+                isMonitorNeeded,
+                physicalMonitor,
+                displayMonitor
+            ) in isMonitorNeededWithPhysicalMonitorInformation
         )
         {
             if (isMonitorNeeded)
@@ -238,7 +250,10 @@ public class ApplicationService : IApplicationService
 
                 try
                 {
-                    this.displayControlServiceFacade.TurnOffMonitor(physicalMonitor);
+                    this.displayControlServiceFacade.TurnOffMonitor(
+                        physicalMonitor,
+                        displayMonitor
+                    );
                 }
                 catch (Exception e)
                 {

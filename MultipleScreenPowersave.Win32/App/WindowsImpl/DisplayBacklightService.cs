@@ -14,20 +14,25 @@ public class DisplayBacklightService : IDisplayBacklightService
     private readonly Dictionary<string, byte> previousBrightnessInPercentByWmiInstance = [];
 
     /// <inheritdoc/>
-    public void TurnOffMonitor(PhysicalMonitorInformation monitor)
+    public void TurnOffMonitor(
+        PhysicalMonitorInformation physicalMonitor,
+        DisplayMonitorInformation virtualMonitor
+    )
     {
-        Guard.IsNotNullOrWhiteSpace(monitor.WmiInstanceName);
+        Guard.IsNotNullOrWhiteSpace(physicalMonitor.WmiInstanceName);
 
         try
         {
-            var previousBrightnessInPercent = WmiGetCurrentBrightness(monitor.WmiInstanceName!);
+            var previousBrightnessInPercent = WmiGetCurrentBrightness(
+                physicalMonitor.WmiInstanceName!
+            );
 
             if (previousBrightnessInPercent > 0)
             {
-                this.previousBrightnessInPercentByWmiInstance[monitor.WmiInstanceName!] =
+                this.previousBrightnessInPercentByWmiInstance[physicalMonitor.WmiInstanceName!] =
                     previousBrightnessInPercent;
                 WmiSetBrightness(
-                    monitor.WmiInstanceName!,
+                    physicalMonitor.WmiInstanceName!,
                     TimeoutInSeconds,
                     brightnessInPercent: 0
                 );

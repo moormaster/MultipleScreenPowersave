@@ -12,16 +12,15 @@ using Windows.Win32.Foundation;
 /// </summary>
 public class DisplayDataChannelService : IDisplayDataChannelService
 {
-    /// <summary>
-    /// Turn off given physical monitor.
-    /// </summary>
-    /// <param name="monitor">Handle to the physical monitor.</param>
-    /// <exception cref="InvalidOperationException">Failure to turn off monitor.</exception>
-    public void TurnOffMonitor(PhysicalMonitorInformation monitor)
+    /// <inheritdoc/>
+    public void TurnOffMonitor(
+        PhysicalMonitorInformation physicalMonitor,
+        DisplayMonitorInformation virtualMonitor
+    )
     {
-        Guard.IsFalse(monitor.Handle == PhysicalMonitorHandle.Empty);
+        Guard.IsFalse(physicalMonitor.Handle == PhysicalMonitorHandle.Empty);
 
-        var currentPowerModeValue = GetCurrentPowerMode(monitor);
+        var currentPowerModeValue = GetCurrentPowerMode(physicalMonitor);
         if (currentPowerModeValue == PowerModeValueConstants.DpmsOff)
         {
             // monitor is already turned off
@@ -29,7 +28,7 @@ public class DisplayDataChannelService : IDisplayDataChannelService
         }
 
         var hresult = PInvoke.SetVCPFeature(
-            (HANDLE)monitor.Handle.Value,
+            (HANDLE)physicalMonitor.Handle.Value,
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
             FeatureConstants.PowerMode,
             // https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L2635
@@ -39,16 +38,12 @@ public class DisplayDataChannelService : IDisplayDataChannelService
         if (hresult != 1)
         {
             throw new InvalidOperationException(
-                $"Failed to turn off monitor #{monitor.Handle.Value}: HRESULT={hresult.ToHexString()}"
+                $"Failed to turn off monitor #{physicalMonitor.Handle.Value}: HRESULT={hresult.ToHexString()}"
             );
         }
     }
 
-    /// <summary>
-    /// Turn on given physical monitor.
-    /// </summary>
-    /// <param name="monitor">Handle to the physical monitor.</param>
-    /// <exception cref="InvalidOperationException">Failure to turn on monitor.</exception>
+    /// <inheritdoc/>
     public void TurnOnMonitor(PhysicalMonitorInformation monitor)
     {
         Guard.IsFalse(monitor.Handle == PhysicalMonitorHandle.Empty);
