@@ -31,7 +31,7 @@ public class DisplayControlServiceFacade(
             displayDataChannelService.TurnOffMonitor(physicalMonitor, virtualMonitor);
             return;
         }
-        catch (InvalidOperationException e)
+        catch (Exception e)
         {
             logger.LogWarning(
                 "Failed to turn off monitor {monitorHandle} using DDC",
@@ -49,7 +49,7 @@ public class DisplayControlServiceFacade(
             displayBacklightService.TurnOffMonitor(physicalMonitor, virtualMonitor);
             return;
         }
-        catch (InvalidOperationException e)
+        catch (Exception e)
         {
             logger.LogWarning(
                 "Failed to turn off monitor {monitorHandle} using backlight control",
@@ -67,7 +67,7 @@ public class DisplayControlServiceFacade(
             blackWindowService.TurnOffMonitor(physicalMonitor, virtualMonitor);
             return;
         }
-        catch (InvalidOperationException e)
+        catch (Exception e)
         {
             logger.LogWarning(
                 "Failed to turn off monitor {monitorHandle} by showing a black window",
@@ -86,7 +86,7 @@ public class DisplayControlServiceFacade(
             displayDataChannelService.TurnOnMonitor(monitor);
             return;
         }
-        catch (InvalidOperationException e)
+        catch (Exception e)
         {
             logger.LogWarning(
                 "Failed to turn on monitor {monitorHandle} using DDC",
@@ -104,7 +104,7 @@ public class DisplayControlServiceFacade(
             displayBacklightService.TurnOnMonitor(monitor);
             return;
         }
-        catch (InvalidOperationException e)
+        catch (Exception e)
         {
             logger.LogWarning(
                 "Failed to turn on monitor {monitorHandle} using backlight control",
@@ -122,7 +122,7 @@ public class DisplayControlServiceFacade(
             blackWindowService.TurnOnMonitor(monitor);
             return;
         }
-        catch (InvalidOperationException e)
+        catch (Exception e)
         {
             logger.LogWarning(
                 "Failed to turn off monitor {monitorHandle} by closing the black window",
