@@ -39,22 +39,26 @@ public class HostedBackgroundService(
     /// <inheritdoc/>
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            try
+        return Task.Run(
+            () =>
             {
-                applicationService.TurnOnOnlyUsedMonitors();
-            }
-            catch (Exception e)
-            {
-                logger.LogError("Failed to turn on only used monitors: {e}", e);
-            }
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        applicationService.TurnOnOnlyUsedMonitors();
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError("Failed to turn on only used monitors: {e}", e);
+                    }
 
-            Thread.Sleep(options.Value.SleepTimeMs);
-        }
+                    Thread.Sleep(options.Value.SleepTimeMs);
+                }
 
-        applicationService.TurnOnAllMonitors();
-
-        return Task.CompletedTask;
+                applicationService.TurnOnAllMonitors();
+            },
+            cancellationToken: stoppingToken
+        );
     }
 }
