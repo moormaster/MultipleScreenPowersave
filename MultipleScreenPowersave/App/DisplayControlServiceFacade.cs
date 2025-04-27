@@ -9,10 +9,12 @@ using MultipleScreenPowersave.Model;
 /// <remarks>
 /// Initializes a new instance of the <see cref="DisplayControlServiceFacade"/> class.
 /// </remarks>
+/// <param name="blackWindowService">BlackWindowService instance.</param>
 /// <param name="displayBacklightService">DisplayBacklightService instance.</param>
 /// <param name="displayDataChannelService">DisplayDataChannelService instance.</param>
 /// <param name="logger">Logger instance.</param>
 public class DisplayControlServiceFacade(
+    IBlackWindowService blackWindowService,
     IDisplayBacklightService displayBacklightService,
     IDisplayDataChannelService displayDataChannelService,
     ILogger<DisplayControlServiceFacade> logger
@@ -54,6 +56,24 @@ public class DisplayControlServiceFacade(
                 physicalMonitor.Handle
             );
             logger.LogDebug("{exception}", e);
+        }
+
+        try
+        {
+            logger.LogWarning(
+                "Turning off monitor {monitorHandle} by showing a black window instead",
+                physicalMonitor.Handle
+            );
+            blackWindowService.TurnOffMonitor(physicalMonitor, virtualMonitor);
+            return;
+        }
+        catch (InvalidOperationException e)
+        {
+            logger.LogWarning(
+                "Failed to turn off monitor {monitorHandle} by showing a black window",
+                physicalMonitor.Handle
+            );
+            logger.LogDebug("{exception}", e);
             throw;
         }
     }
@@ -88,6 +108,24 @@ public class DisplayControlServiceFacade(
         {
             logger.LogWarning(
                 "Failed to turn on monitor {monitorHandle} using backlight control",
+                monitor.Handle
+            );
+            logger.LogDebug("{exception}", e);
+        }
+
+        try
+        {
+            logger.LogWarning(
+                "Turning on monitor {monitorHandle} by closing the black window instead",
+                monitor.Handle
+            );
+            blackWindowService.TurnOnMonitor(monitor);
+            return;
+        }
+        catch (InvalidOperationException e)
+        {
+            logger.LogWarning(
+                "Failed to turn off monitor {monitorHandle} by closing the black window",
                 monitor.Handle
             );
             logger.LogDebug("{exception}", e);

@@ -1,5 +1,7 @@
 ﻿namespace MultipleScreenPowersave;
 
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MultipleScreenPowersave.App;
@@ -11,11 +13,21 @@ using Serilog;
 public static class Program
 {
     /// <summary>
+    /// Avalonia configuration, don't remove; also used by visual designer.
+    /// </summary>
+    /// <returns>The AppBuilder.</returns>
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        return AppBuilder.Configure<AvaloniaApp>().UsePlatformDetect().WithInterFont().LogToTrace();
+    }
+
+    /// <summary>
     /// Main entry method.
     /// </summary>
     public static void Main()
     {
         SetupSerilog();
+        AppBuilder avaloniaAppBuilder = BuildAvaloniaApp();
 
         var hostBuilder = Host.CreateApplicationBuilder();
         hostBuilder
@@ -40,7 +52,26 @@ public static class Program
             hostedBackgroundService.StopAsync(cancellationToken: default);
         };
 
-        host.Run();
+        Task? hostTask = null;
+        IControlledApplicationLifetime? avaloniaApplicationLifetime = null;
+
+        avaloniaAppBuilder
+            .AfterPlatformServicesSetup(appBuilder =>
+            {
+                hostTask = host.RunAsync();
+            })
+            .StartWithClassicDesktopLifetime(
+                [],
+                lifeTime =>
+                {
+                    lifeTime.ShutdownMode = Avalonia.Controls.ShutdownMode.OnExplicitShutdown;
+
+                    avaloniaApplicationLifetime = lifeTime;
+                }
+            );
+
+        hostTask?.Wait();
+        avaloniaApplicationLifetime?.Shutdown();
     }
 
     private static void SetupSerilog()

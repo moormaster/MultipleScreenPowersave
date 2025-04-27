@@ -10,6 +10,15 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.8" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.8" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.8" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.8" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.2.8">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="CSharpier.MsBuild" Version="1.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -25,6 +34,14 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MultipleScreenPowersave.Win32\MultipleScreenPowersave.Win32.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="AvaloniaApp.axaml.cs">
+      <DependentUpon>AvaloniaApp.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Ui\BlackWindow.axaml.cs">
+      <DependentUpon>Ui\BlackWindow.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">

@@ -24,9 +24,11 @@ public static class ServiceCollectionExtensions
             .AddOptions<HostedBackgroundServiceOptions>()
             .BindConfiguration("hostedBackgroundService");
         services.AddOptions<BlacklistOptions>().BindConfiguration("blacklist");
+        services.AddOptions<BlackWindowServiceOptions>().BindConfiguration("blackWindowService");
 
         services
             .AddTransient(typeof(IApplicationService), typeof(ApplicationService))
+            .AddTransient(typeof(IBlackWindowService), typeof(BlackWindowService))
             .AddTransient(typeof(IDisplayControlServiceFacade), typeof(DisplayControlServiceFacade))
             .AddHostedService<HostedBackgroundService>();
 

@@ -49,6 +49,10 @@ public class WindowQuery : IWindowQuery
                 continue;
             }
 
+            // skip examing windows from this process
+            if (Environment.ProcessId == processId)
+                continue;
+
             WindowProcessInformation windowProcessInformation;
             {
                 var windowInfo = default(WINDOWINFO);
