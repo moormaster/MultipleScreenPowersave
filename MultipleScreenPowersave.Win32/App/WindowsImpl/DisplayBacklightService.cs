@@ -18,13 +18,24 @@ public class DisplayBacklightService : IDisplayBacklightService
     {
         Guard.IsNotNullOrWhiteSpace(monitor.WmiInstanceName);
 
-        var previousBrightnessInPercent = WmiGetCurrentBrightness(monitor.WmiInstanceName!);
-
-        if (previousBrightnessInPercent > 0)
+        try
         {
-            this.previousBrightnessInPercentByWmiInstance[monitor.WmiInstanceName!] =
-                previousBrightnessInPercent;
-            WmiSetBrightness(monitor.WmiInstanceName!, TimeoutInSeconds, brightnessInPercent: 0);
+            var previousBrightnessInPercent = WmiGetCurrentBrightness(monitor.WmiInstanceName!);
+
+            if (previousBrightnessInPercent > 0)
+            {
+                this.previousBrightnessInPercentByWmiInstance[monitor.WmiInstanceName!] =
+                    previousBrightnessInPercent;
+                WmiSetBrightness(
+                    monitor.WmiInstanceName!,
+                    TimeoutInSeconds,
+                    brightnessInPercent: 0
+                );
+            }
+        }
+        catch (ManagementException e)
+        {
+            throw new InvalidOperationException("WMI exception occured", e);
         }
     }
 
@@ -33,22 +44,29 @@ public class DisplayBacklightService : IDisplayBacklightService
     {
         Guard.IsNotNullOrWhiteSpace(monitor.WmiInstanceName);
 
-        if (
-            !this.previousBrightnessInPercentByWmiInstance.TryGetValue(
-                monitor.WmiInstanceName!,
-                out var previousBrightnessInPercent
-            )
-        )
-            previousBrightnessInPercent = 100;
-
-        var currentBrightness = WmiGetCurrentBrightness(monitor.WmiInstanceName!);
-        if (currentBrightness == 0)
+        try
         {
-            WmiSetBrightness(
-                monitor.WmiInstanceName!,
-                TimeoutInSeconds,
-                previousBrightnessInPercent
-            );
+            if (
+                !this.previousBrightnessInPercentByWmiInstance.TryGetValue(
+                    monitor.WmiInstanceName!,
+                    out var previousBrightnessInPercent
+                )
+            )
+                previousBrightnessInPercent = 100;
+
+            var currentBrightness = WmiGetCurrentBrightness(monitor.WmiInstanceName!);
+            if (currentBrightness == 0)
+            {
+                WmiSetBrightness(
+                    monitor.WmiInstanceName!,
+                    TimeoutInSeconds,
+                    previousBrightnessInPercent
+                );
+            }
+        }
+        catch (ManagementException e)
+        {
+            throw new InvalidOperationException("WMI exception occured", e);
         }
     }
 
