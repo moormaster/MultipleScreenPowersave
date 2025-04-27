@@ -12,4 +12,5 @@ GetWindowTextLength
 GetWindowThreadProcessId
 MONITORINFOF_PRIMARY
 MONITORINFOEXW
+GetVCPFeatureAndVCPFeatureReply
 SetVCPFeature

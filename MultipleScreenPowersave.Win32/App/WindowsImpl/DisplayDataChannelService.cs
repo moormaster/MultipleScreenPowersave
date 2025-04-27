@@ -21,6 +21,13 @@ public class DisplayDataChannelService : IDisplayDataChannelService
     {
         Guard.IsFalse(monitor.Handle == PhysicalMonitorHandle.Empty);
 
+        var currentPowerModeValue = GetCurrentPowerMode(monitor);
+        if (currentPowerModeValue == PowerModeValueConstants.DpmsOff)
+        {
+            // monitor is already turned off
+            return;
+        }
+
         var hresult = PInvoke.SetVCPFeature(
             (HANDLE)monitor.Handle.Value,
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
@@ -46,6 +53,13 @@ public class DisplayDataChannelService : IDisplayDataChannelService
     {
         Guard.IsFalse(monitor.Handle == PhysicalMonitorHandle.Empty);
 
+        var currentPowerModeValue = GetCurrentPowerMode(monitor);
+        if (currentPowerModeValue == PowerModeValueConstants.DpmOn)
+        {
+            // monitor is already turned on
+            return;
+        }
+
         var hresult = PInvoke.SetVCPFeature(
             (HANDLE)monitor.Handle.Value,
             // see https://github.com/rockowitz/ddcutil/blob/b4039d15d87c2ec6e20b4bb79607cc7c979e74a1/src/vcp/vcp_feature_codes.c#L4099
@@ -60,5 +74,31 @@ public class DisplayDataChannelService : IDisplayDataChannelService
                 $"Failed to turn on monitor #{monitor.Handle.Value}: HRESULT={hresult.ToHexString()}"
             );
         }
+    }
+
+    private static uint GetCurrentPowerMode(PhysicalMonitorInformation monitor)
+    {
+        int hresult;
+        uint currentValue;
+        uint maximumValue;
+
+        unsafe
+        {
+            hresult = PInvoke.GetVCPFeatureAndVCPFeatureReply(
+                (HANDLE)monitor.Handle.Value,
+                FeatureConstants.PowerMode,
+                pdwCurrentValue: &currentValue,
+                pdwMaximumValue: &maximumValue
+            );
+        }
+
+        if (hresult != 1 || currentValue == 0)
+        {
+            throw new InvalidOperationException(
+                $"Monitor #{monitor.Handle.Value} does not support PowerMode DDC feature: HRESULT={hresult.ToHexString()}"
+            );
+        }
+
+        return currentValue;
     }
 }
