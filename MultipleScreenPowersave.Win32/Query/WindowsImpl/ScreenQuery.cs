@@ -125,7 +125,8 @@ public class ScreenQuery : IScreenQuery
                 if (deviceId != null)
                 {
                     var (monitorId, driverId) = ParseMonitorDriverId(deviceId);
-                    edidHex = GetMonitorEdidHexFromRegistry(monitorId, driverId);
+                    edidHex = GetMonitorEdidHexFromRegistry(monitorId, driverId)
+                        .Substring(0, 128 * 2);
                 }
 
                 string? wmiInstanceName = null;
