@@ -171,18 +171,25 @@ public class ScreenQuery : IScreenQuery
         ManagementObjectSearcher searcher = new(scope, query);
         foreach (var wmiObject in searcher.Get().OfType<ManagementObject>())
         {
-            // see https://learn.microsoft.com/en-us/windows/win32/wmicoreprov/wmigetmonitorraweedidv1block-wmimonitordescriptormethods
-            var inParameters = wmiObject.GetMethodParameters("WmiGetMonitorRawEEdidV1Block");
-            inParameters["BlockId"] = 0;
-            var outParameters = wmiObject.InvokeMethod(
-                "WmiGetMonitorRawEEdidV1Block",
-                inParameters,
-                new()
-            );
+            try
+            {
+                // see https://learn.microsoft.com/en-us/windows/win32/wmicoreprov/wmigetmonitorraweedidv1block-wmimonitordescriptormethods
+                var inParameters = wmiObject.GetMethodParameters("WmiGetMonitorRawEEdidV1Block");
+                inParameters["BlockId"] = 0;
+                var outParameters = wmiObject.InvokeMethod(
+                    "WmiGetMonitorRawEEdidV1Block",
+                    inParameters,
+                    new()
+                );
 
-            var edidBytes = (byte[])outParameters["BlockContent"];
-            var edidHex = Convert.ToHexString(edidBytes);
-            result.Add(edidHex, (edidHex, wmiObject["InstanceName"]?.ToString()!));
+                var edidBytes = (byte[])outParameters["BlockContent"];
+                var edidHex = Convert.ToHexString(edidBytes);
+                result.Add(edidHex, (edidHex, wmiObject["InstanceName"]?.ToString()!));
+            }
+            catch (ManagementException)
+            {
+                // ignore exceptions from monitors not supporting DDC.
+            }
         }
 
         return result;
