@@ -9,6 +9,7 @@ using MultipleScreenPowersave.Extensions;
 using MultipleScreenPowersave.Model;
 using MultipleScreenPowersave.Model.Handles;
 using MultipleScreenPowersave.Query;
+using MultipleScreenPowersave.Ui;
 
 /// <summary>
 /// ApplicationService providing functions to turn off Monitors based on activity.
@@ -143,6 +144,9 @@ public class ApplicationService : IApplicationService
                 );
                 continue;
             }
+
+            if (IsSystemWindow(windowProcessInformation))
+                continue;
 
             if (displayMonitor is null)
             {
@@ -323,6 +327,14 @@ public class ApplicationService : IApplicationService
     )
     {
         return blacklist.DisplayMonitors.Any(monitorEntry => monitorEntry.IsMatch(displayMonitor));
+    }
+
+    private static bool IsSystemWindow(WindowProcessInformation windowProcessInformation)
+    {
+        if (windowProcessInformation.WindowTitle == BlackWindow.BlackWindowTitle)
+            return true;
+
+        return false;
     }
 
     private static bool IsIgnoreMouse(BlacklistOptions blacklist, Point position)

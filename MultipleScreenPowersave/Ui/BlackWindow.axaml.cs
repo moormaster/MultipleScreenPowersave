@@ -11,6 +11,8 @@ using System.Diagnostics;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 public partial class BlackWindow : Window
 {
+    public const string BlackWindowTitle = "MultipleScreenPowersave BlackWindow";
+
     private bool closeOnMouseMove;
 
     public BlackWindow() : this(closeOnMouseMove: false) { }

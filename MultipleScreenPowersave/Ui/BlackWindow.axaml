@@ -6,7 +6,6 @@
         x:Class="MultipleScreenPowersave.Ui.BlackWindow"
 		Background="Black"
 		PointerMoved="Window_PointerMoved"
-		Title="MultipleScreenPowersave BlackWindow"
 		Topmost="True"
         WindowState="FullScreen">
 </Window>

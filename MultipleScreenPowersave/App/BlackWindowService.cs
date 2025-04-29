@@ -77,6 +77,7 @@ public class BlackWindowService : IBlackWindowService
         {
             Background = background,
             Position = virtualMonitor.MonitorRectangle.Location.ToPixelPoint(),
+            Title = BlackWindow.BlackWindowTitle,
         };
 
         return window;
