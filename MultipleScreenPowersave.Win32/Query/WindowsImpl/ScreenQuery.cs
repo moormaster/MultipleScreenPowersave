@@ -82,6 +82,7 @@ public class ScreenQuery : IScreenQuery
             // enumerate WMI instances
             var wmiInstanceNameByEdidhex = GetWmiInstanceNameByEdidHex();
 
+            uint physicalMonitorIndex = 0;
             foreach (var hMonitor in displayMonitorRectangles.Keys)
             {
                 MONITORINFOEXW monitorInfo = default;
@@ -136,7 +137,6 @@ public class ScreenQuery : IScreenQuery
                         wmiInstanceName = tuple.InstanceName;
                 }
 
-                uint physicalMonitorIndex = 0;
                 displayMonitor.PhysicalMonitors.AddRange(
                     physicalMonitors.Select(element => new PhysicalMonitorInformation(
                         new PhysicalMonitorHandle((int)element.hPhysicalMonitor),
