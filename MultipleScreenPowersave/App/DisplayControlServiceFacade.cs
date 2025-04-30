@@ -106,7 +106,7 @@ public class DisplayControlServiceFacade(
         if ((physicalMonitorInformation1 == null) ^ (physicalMonitorInformation2 == null))
             return false;
 
-        if (physicalMonitorInformation1 == null && physicalMonitorInformation1 == null)
+        if (physicalMonitorInformation1 == null && physicalMonitorInformation2 == null)
             return true;
 
         if (physicalMonitorInformation1.Handle == physicalMonitorInformation2?.Handle)
