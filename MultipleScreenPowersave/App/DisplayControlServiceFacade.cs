@@ -109,16 +109,16 @@ public class DisplayControlServiceFacade(
         if (physicalMonitorInformation1 == null && physicalMonitorInformation2 == null)
             return true;
 
-        if (physicalMonitorInformation1.Handle == physicalMonitorInformation2?.Handle)
+        if (physicalMonitorInformation1?.Handle == physicalMonitorInformation2?.Handle)
             return true;
 
-        if (!string.IsNullOrEmpty(physicalMonitorInformation1.EdidHex))
+        if (!string.IsNullOrEmpty(physicalMonitorInformation1?.EdidHex))
         {
             if (physicalMonitorInformation1.EdidHex == physicalMonitorInformation2?.EdidHex)
                 return true;
         }
 
-        if (!string.IsNullOrEmpty(physicalMonitorInformation1.LinuxBacklightDevice))
+        if (!string.IsNullOrEmpty(physicalMonitorInformation1?.LinuxBacklightDevice))
         {
             if (
                 physicalMonitorInformation1.LinuxBacklightDevice
@@ -127,7 +127,7 @@ public class DisplayControlServiceFacade(
                 return true;
         }
 
-        if (!string.IsNullOrEmpty(physicalMonitorInformation1.LinuxI2cDevice))
+        if (!string.IsNullOrEmpty(physicalMonitorInformation1?.LinuxI2cDevice))
         {
             if (
                 physicalMonitorInformation1.LinuxI2cDevice
@@ -136,7 +136,7 @@ public class DisplayControlServiceFacade(
                 return true;
         }
 
-        if (!string.IsNullOrEmpty(physicalMonitorInformation1.WmiInstanceName))
+        if (!string.IsNullOrEmpty(physicalMonitorInformation1?.WmiInstanceName))
         {
             if (
                 physicalMonitorInformation1.WmiInstanceName
@@ -145,7 +145,7 @@ public class DisplayControlServiceFacade(
                 return true;
         }
 
-        if (physicalMonitorInformation1.Index == physicalMonitorInformation2?.Index)
+        if (physicalMonitorInformation1?.Index == physicalMonitorInformation2?.Index)
             return true;
 
         return false;
