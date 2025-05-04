@@ -59,6 +59,7 @@ public class PhysicalMonitorInformation(PhysicalMonitorHandle handle, uint index
         sb.AppendLine("PhysicalMonitorInformation {");
 
         sb.AppendLine($"\tHandle: {this.Handle},");
+        sb.AppendLine($"\tIndex: {this.Index},");
         sb.AppendLine($"\tDescription: {this.Description},");
         sb.AppendLine($"\tDeviceId: {this.DeviceId},");
         sb.AppendLine($"\tEdidHex: {this.EdidHex}");
