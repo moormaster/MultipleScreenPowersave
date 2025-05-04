@@ -11,13 +11,17 @@ using MultipleScreenPowersave.Model;
 /// </remarks>
 /// <param name="description">Regular expression that should match to physical monitors description..</param>
 /// <param name="deviceId">Regular expression that should match to physical monitors deviceId.</param>
-/// <param name="wmiInstanceName">Regular expression that should match to the physical monitors wmiInstanceName.</param>
 /// <param name="index">0-based index within <see cref="ScreenInformation.PhysicalMonitors"/> collection.</param>
+/// <param name="linuxBacklightDevice">Regular expression that should match the backlight control linux device.</param>
+/// <param name="linuxI2cDevice">Regular expression that should match the I2cBus linux device.</param>
+/// <param name="wmiInstanceName">Regular expression that should match to the physical monitors wmiInstanceName.</param>
 public abstract class PhysicalMonitorEntryBase(
     string? description,
     string? deviceId,
-    string? wmiInstanceName,
-    uint? index
+    uint? index,
+    string? linuxBacklightDevice,
+    string? linuxI2cDevice,
+    string? wmiInstanceName
 )
 {
     /// <summary>
@@ -44,6 +48,28 @@ public abstract class PhysicalMonitorEntryBase(
     /// Gets the 0-based index within <see cref="ScreenInformation.PhysicalMonitors"/> collection.
     /// </summary>
     public uint? Index { get; } = index;
+
+    /// <summary>
+    /// Gets the pattern for the regular expression that should match the backlight control linux device.
+    /// </summary>
+    public string? LinuxBacklightDevice { get; } = linuxBacklightDevice;
+
+    /// <summary>
+    /// Gets the regular expression that should match the backlight control linux device.
+    /// </summary>
+    public Regex? LinuxBacklightDeviceRegex =>
+        this.LinuxBacklightDevice != null ? new Regex(this.LinuxBacklightDevice) : null;
+
+    /// <summary>
+    /// Gets the pattern for the regular expression that should match the I2cBus linux device.
+    /// </summary>
+    public string? LinuxI2cDevice { get; } = linuxI2cDevice;
+
+    /// <summary>
+    /// Gets the regular expression that should match the I2cBus linux device.
+    /// </summary>
+    public Regex? LinuxI2cDeviceRegex =>
+        this.LinuxI2cDevice != null ? new Regex(this.LinuxI2cDevice) : null;
 
     /// <summary>
     /// Gets the pattern for the regular expression that should match to the physical monitors wmiInstanceName to be blacklisted.
@@ -81,6 +107,22 @@ public abstract class PhysicalMonitorEntryBase(
         {
             return displayMonitor.PhysicalMonitors.Any(physicalMonitor =>
                 this.DeviceIdRegex.IsMatch(physicalMonitor.DeviceId ?? string.Empty)
+            );
+        }
+
+        if (this.LinuxBacklightDeviceRegex != null)
+        {
+            return displayMonitor.PhysicalMonitors.Any(physicalMonitor =>
+                this.LinuxBacklightDeviceRegex.IsMatch(
+                    physicalMonitor.LinuxBacklightDevice ?? string.Empty
+                )
+            );
+        }
+
+        if (this.LinuxI2cDeviceRegex != null)
+        {
+            return displayMonitor.PhysicalMonitors.Any(physicalMonitor =>
+                this.LinuxI2cDeviceRegex.IsMatch(physicalMonitor.LinuxI2cDevice ?? string.Empty)
             );
         }
 
