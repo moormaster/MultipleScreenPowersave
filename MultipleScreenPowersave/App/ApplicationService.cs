@@ -58,6 +58,8 @@ public class ApplicationService : IApplicationService
 
         var screenInformation = this.screenQuery.GetScreenInformation();
         this.logger.LogDebug("{screenInformation}", screenInformation);
+
+        this.LogAvailableScreens(screenInformation);
     }
 
     /// <inheritdoc/>
@@ -334,6 +336,33 @@ public class ApplicationService : IApplicationService
         return displayMonitor != null;
     }
 
+    private static string FormatPhysicalMonitorIdentity(PhysicalMonitorInformation physicalMonitor)
+    {
+        var (index, description, linuxI2cDevice, linuxBacklightDevice, deviceId, wmiInstanceName) =
+            (
+                physicalMonitor.Index,
+                physicalMonitor.Description,
+                physicalMonitor.LinuxI2cDevice,
+                physicalMonitor.LinuxBacklightDevice,
+                physicalMonitor.DeviceId,
+                physicalMonitor.WmiInstanceName
+            );
+
+        var result = $"Index: {index}";
+        if (!string.IsNullOrWhiteSpace(description))
+            result += $", Description: {description}";
+        if (!string.IsNullOrWhiteSpace(linuxI2cDevice))
+            result += $", LinuxI2cDevice: {linuxI2cDevice}";
+        if (!string.IsNullOrWhiteSpace(linuxBacklightDevice))
+            result += $", LinuxBacklightDevice: {linuxBacklightDevice}";
+        if (!string.IsNullOrWhiteSpace(deviceId))
+            result += $", DeviceId: {deviceId}";
+        if (!string.IsNullOrWhiteSpace(wmiInstanceName))
+            result += $", WmiInstanceName: {wmiInstanceName}";
+
+        return result;
+    }
+
     private static bool IsBlacklisted(
         BlacklistOptions blacklist,
         WindowProcessInformation windowProcessInformation
@@ -361,5 +390,17 @@ public class ApplicationService : IApplicationService
     private static bool IsIgnoreMouse(BlacklistOptions blacklist, Point position)
     {
         return blacklist.IgnoreMouseAtRectangles.Any(rect => rect.Contains(position));
+    }
+
+    private void LogAvailableScreens(ScreenInformation screenInformation)
+    {
+        this.logger.LogInformation("Screens detected:");
+        foreach (var monitor in screenInformation.PhysicalMonitors)
+        {
+            this.logger.LogInformation(
+                "    {monitorIdentity}",
+                FormatPhysicalMonitorIdentity(monitor)
+            );
+        }
     }
 }
