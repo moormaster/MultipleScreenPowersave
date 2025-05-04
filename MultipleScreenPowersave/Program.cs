@@ -48,12 +48,19 @@ public static class Program
         var host = hostBuilder.Build();
 
         // catch SIGTERM
-        AppDomain.CurrentDomain.ProcessExit += (object? sender, EventArgs e) =>
+        AppDomain.CurrentDomain.ProcessExit += (object? sender, EventArgs ev) =>
         {
-            var hostedBackgroundService = (HostedBackgroundService)
-                host.Services.GetService<IHostedService>()!;
+            try
+            {
+                var hostedBackgroundService = (HostedBackgroundService)
+                    host.Services.GetService<IHostedService>()!;
 
-            hostedBackgroundService.StopAsync(cancellationToken: default);
+                hostedBackgroundService.StopAsync(cancellationToken: default);
+            }
+            catch (ObjectDisposedException)
+            {
+                // ignore exception when host has already been stopped
+            }
         };
 
         Task? hostTask = null;
@@ -63,6 +70,12 @@ public static class Program
             .AfterPlatformServicesSetup(appBuilder =>
             {
                 hostTask = host.RunAsync();
+
+                Task.Run(async () =>
+                {
+                    await hostTask;
+                    avaloniaApplicationLifetime?.Shutdown();
+                });
             })
             .StartWithClassicDesktopLifetime(
                 [],
@@ -73,9 +86,6 @@ public static class Program
                     avaloniaApplicationLifetime = lifeTime;
                 }
             );
-
-        hostTask?.Wait();
-        avaloniaApplicationLifetime?.Shutdown();
     }
 
     private static void SetupSerilog()
