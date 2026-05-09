@@ -1,5 +1,8 @@
 # MultipleScreenPowersave
 
+> [!WARNING]
+> This repository has been archived and migrated to https://codeberg.org/moormaster/MultipleScreenPowersave
+
 **Experimental** tool for automatically switching off unused monitors in a multiple monitor setup.
 Monitors are considered USED when at least one of the conditions is met
 - at least one window is being shown
